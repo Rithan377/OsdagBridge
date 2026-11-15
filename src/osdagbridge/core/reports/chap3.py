@@ -362,32 +362,32 @@ This section summarizes all loads applied to the bridge and the load combination
 \begin{longtable}{|L{3.8cm}|C{2.2cm}|C{3.5cm}|C{3.5cm}|}
 \caption{\textbf{Vehicle Live Loads (LL) --- Table 3.3(a)}}
 \hline
-\textbf{Vehicle Class} & \textbf{Impact Factor} & \textbf{Braking Force (kN)} & \textbf{Centrifugal Force} \\
+\textbf{Vehicle Class} & \textbf{Impact Factor (IF)} & \textbf{Braking Force (kN)} & \textbf{Centrifugal Force (kN)} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Vehicle Class} & \textbf{Impact Factor} & \textbf{Braking Force (kN)} & \textbf{Centrifugal Force} \\
+\textbf{Vehicle Class} & \textbf{Impact Factor (IF)} & \textbf{Braking Force (kN)} & \textbf{Centrifugal Force (kN)} \\
 \hline
 \endhead
 """ + vehicle_rows_str + r"""
 \end{longtable}
 
 \vspace{1em}
-\begin{longtable}{|L{5.5cm}|p{10.0cm}|}
+\begin{longtable}{|L{5.0cm}|p{7.0cm}|C{3.0cm}|}
 \caption{\textbf{Footway Live Load --- Table 3.3(b)}}
 \hline
-\textbf{Parameter} & \textbf{Value} \\
+\textbf{Parameter} & \textbf{Value} & \textbf{Unit} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Parameter} & \textbf{Value} \\
+\textbf{Parameter} & \textbf{Value} & \textbf{Unit} \\
 \hline
 \endhead
-\textnormal{Footpath Live Load Pressure} & """ + _tex(fp_str) + r""" \\[6pt]
+\textnormal{Footpath Live Load Pressure} & """ + _tex(fp_str) + r""" & kN/m$^2$ \\[6pt]
 \hline
-\textnormal{Load Mode} & """ + _tex(str(fp_mode) if fp_mode else 'N/A') + r""" \\[6pt]
+\textnormal{Load Mode} & """ + _tex(str(fp_mode) if fp_mode else 'N/A') + r""" & --- \\[6pt]
 \hline
-\textnormal{Applicable Clause} & IRC 6 Cl. 206.1 \\[6pt]
+\textnormal{Applicable Clause} & IRC 6 Cl. 206.1 & --- \\[6pt]
 \hline
 \end{longtable}
 
