@@ -915,7 +915,9 @@ def generate_report(payload, request):
             quantities = calculate_material_quantities(payload.inputs, payload.output_dict)
             # Only update keys that have real values (preserve existing data)
             for k, v in quantities.items():
-                if v not in (None, "", "N.A.") or k not in payload.inputs:
+                v_str = str(v) if v is not None else ""
+                is_placeholder = v in (None, "", "N.A.") or r"\placeholder" in v_str
+                if not is_placeholder or k not in payload.inputs:
                     payload.inputs[k] = v
 
             # ── Generate charts for Chapters 5 and 7 ──

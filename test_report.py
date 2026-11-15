@@ -97,6 +97,123 @@ def _generate_placeholder_figures(save_dir):
     fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
     figs['final_geometry'] = p
 
+    # ── BM Envelope ──
+    fig, ax = plt.subplots(figsize=(10, 4))
+    x = [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30]
+    bm_max = [0, 2100, 3400, 4000, 4200, 4250, 4200, 4000, 3400, 2100, 0]
+    bm_min = [0, -150, -80, -30, -10, 0, -10, -30, -80, -150, 0]
+    ax.fill_between(x, bm_max, bm_min, alpha=0.3, color='blue')
+    ax.plot(x, bm_max, 'b-', linewidth=2, label='Max BM')
+    ax.plot(x, bm_min, 'r--', linewidth=1.5, label='Min BM')
+    ax.axhline(y=0, color='black', linewidth=0.5)
+    ax.set_xlabel('Distance from Left Support (m)')
+    ax.set_ylabel('Bending Moment (kN-m)')
+    ax.set_title('Bending Moment Envelope — ULS', fontweight='bold')
+    ax.legend(); ax.grid(True, alpha=0.3)
+    p = os.path.join(save_dir, 'bm_envelope.png')
+    fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+    figs['bm_envelope'] = p
+
+    # ── SF Envelope ──
+    fig, ax = plt.subplots(figsize=(10, 4))
+    sf_max = [580, 450, 320, 200, 100, 0, -100, -200, -320, -450, -580]
+    sf_min = [320, 240, 160, 80, 20, 0, -20, -80, -160, -240, -320]
+    ax.fill_between(x, sf_max, sf_min, alpha=0.3, color='green')
+    ax.plot(x, sf_max, 'g-', linewidth=2, label='Max SF')
+    ax.plot(x, sf_min, 'r--', linewidth=1.5, label='Min SF')
+    ax.axhline(y=0, color='black', linewidth=0.5)
+    ax.set_xlabel('Distance from Left Support (m)')
+    ax.set_ylabel('Shear Force (kN)')
+    ax.set_title('Shear Force Envelope — ULS', fontweight='bold')
+    ax.legend(); ax.grid(True, alpha=0.3)
+    p = os.path.join(save_dir, 'sf_envelope.png')
+    fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+    figs['sf_envelope'] = p
+
+    # ── Deflection Diagram ──
+    fig, ax = plt.subplots(figsize=(10, 4))
+    import numpy as np
+    xd = np.linspace(0, 30, 100)
+    defl = -12.5 * np.sin(np.pi * xd / 30)
+    ax.plot(xd, defl, 'b-', linewidth=2)
+    ax.fill_between(xd, defl, 0, alpha=0.15, color='blue')
+    ax.axhline(y=-37.5, color='red', linestyle='--', linewidth=1.2, label='L/800 = 37.5 mm')
+    ax.set_xlabel('Distance from Left Support (m)')
+    ax.set_ylabel('Vertical Deflection (mm)')
+    ax.set_title('Vertical Deflection — 1.0 LL', fontweight='bold')
+    ax.legend(); ax.grid(True, alpha=0.3)
+    ax.invert_yaxis()
+    p = os.path.join(save_dir, 'defl_ll.png')
+    fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+    figs['defl_ll'] = p
+
+    # ── Plate Girder Elevation ──
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.set_xlim(-1, 31); ax.set_ylim(-2, 3)
+    # Web
+    ax.add_patch(patches.Rectangle((0, -0.6), 30, 1.2, facecolor='#D4E6FF', edgecolor='#2060A0', linewidth=1.5))
+    # Top flange
+    ax.add_patch(patches.Rectangle((-0.05, 0.6), 30.1, 0.15, facecolor='#2060A0', edgecolor='black', linewidth=1))
+    # Bottom flange
+    ax.add_patch(patches.Rectangle((-0.05, -0.75), 30.1, 0.15, facecolor='#2060A0', edgecolor='black', linewidth=1))
+    # Stiffeners
+    for sx in range(0, 31, 5):
+        ax.plot([sx, sx], [-0.6, 0.6], color='#A0A0A0', linewidth=1, linestyle='-')
+    # Bearing stiffeners
+    for sx in [0, 30]:
+        ax.add_patch(patches.Rectangle((sx-0.15, -0.75), 0.3, 1.5, facecolor='#FF8C00', edgecolor='black', linewidth=1.5))
+    # Dimensions
+    ax.annotate('', xy=(0, -1.3), xytext=(30, -1.3), arrowprops=dict(arrowstyle='<->', color='black'))
+    ax.text(15, -1.5, '30,000 mm (Span)', ha='center', fontsize=9)
+    ax.annotate('', xy=(31, -0.75), xytext=(31, 0.75), arrowprops=dict(arrowstyle='<->', color='black'))
+    ax.text(31.5, 0, '1200mm', ha='left', fontsize=8, rotation=90, va='center')
+    ax.set_title('Plate Girder — Elevation View', fontsize=12, fontweight='bold')
+    ax.set_aspect('equal'); ax.axis('off')
+    p = os.path.join(save_dir, 'girder_elevation.png')
+    fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+    figs['girder_elevation'] = p
+
+    # ── Cross-Bracing Layout ──
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.set_xlim(-0.5, 3); ax.set_ylim(-1.5, 1.5)
+    # Girders (vertical)
+    for gx in [0, 2.5]:
+        ax.add_patch(patches.Rectangle((gx-0.05, -1.2), 0.1, 2.4, facecolor='#2060A0', edgecolor='black'))
+    # Top chord
+    ax.plot([0, 2.5], [1.0, 1.0], 'g-', linewidth=3, label='Top Chord')
+    # Bottom chord
+    ax.plot([0, 2.5], [-1.0, -1.0], 'g-', linewidth=3, label='Bottom Chord')
+    # X-bracing diagonals
+    ax.plot([0, 2.5], [-1.0, 1.0], 'r-', linewidth=2, label='Diagonal')
+    ax.plot([0, 2.5], [1.0, -1.0], 'r-', linewidth=2)
+    ax.text(0, 1.3, 'G1', ha='center', fontweight='bold')
+    ax.text(2.5, 1.3, 'G2', ha='center', fontweight='bold')
+    ax.set_title('Cross-Bracing Layout (X-Type)', fontsize=12, fontweight='bold')
+    ax.legend(loc='lower right', fontsize=8)
+    ax.set_aspect('equal'); ax.axis('off')
+    p = os.path.join(save_dir, 'cross_bracing_layout.png')
+    fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+    figs['cross_bracing_layout'] = p
+
+    # ── End Diaphragm Layout ──
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.set_xlim(-0.5, 3); ax.set_ylim(-1.5, 1.5)
+    for gx in [0, 2.5]:
+        ax.add_patch(patches.Rectangle((gx-0.05, -1.2), 0.1, 2.4, facecolor='#2060A0', edgecolor='black'))
+    ax.plot([0, 2.5], [0.8, 0.8], 'g-', linewidth=3, label='Top Chord')
+    ax.plot([0, 2.5], [-0.8, -0.8], 'g-', linewidth=3, label='Bottom Chord')
+    ax.plot([0, 2.5], [-0.8, 0.8], 'r-', linewidth=2.5, label='Diagonal')
+    ax.plot([0, 2.5], [0.8, -0.8], 'r-', linewidth=2.5)
+    ax.text(0, 1.1, 'G1', ha='center', fontweight='bold')
+    ax.text(2.5, 1.1, 'G2', ha='center', fontweight='bold')
+    ax.text(1.25, -1.3, 'End Diaphragm at Bearing', ha='center', fontsize=9, style='italic')
+    ax.set_title('End Diaphragm Layout (X-Type)', fontsize=12, fontweight='bold')
+    ax.legend(loc='lower right', fontsize=8)
+    ax.set_aspect('equal'); ax.axis('off')
+    p = os.path.join(save_dir, 'end_diaphragm_layout.png')
+    fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+    figs['end_diaphragm_layout'] = p
+
     return figs
 
 
@@ -277,7 +394,7 @@ def build_mock_payload():
         'design_options.construction_stage': 'Yes',
 
         # ── BOQ quantities (pre-computed) ──
-        'steel_girders_vol_formula': '4 girders x 30m x 0.032 m\u00b2/m',
+        'steel_girders_vol_formula': '4 × (0.4×0.025×2 + 1.15×0.012) × 30 m',
         'steel_girders_qty': '4',
         'steel_girders_vol_total': '3.84 m\u00b3',
         'steel_girders_wt_single': '7.52',
@@ -298,6 +415,21 @@ def build_mock_payload():
         'bracing_diag_wt_single': '0.044',
         'bracing_diag_wt_total': '0.53',
         'end_diaphragm_wt_total': '0.42',
+        'ed_top_vol_formula': '2 panels × 2.5m × 0.002 m²',
+        'ed_top_qty': '2',
+        'ed_top_vol_total': '0.01 m³',
+        'ed_top_wt_single': '0.04',
+        'ed_top_wt_total': '0.08',
+        'ed_bot_vol_formula': '2 panels × 2.5m × 0.002 m²',
+        'ed_bot_qty': '2',
+        'ed_bot_vol_total': '0.01 m³',
+        'ed_bot_wt_single': '0.04',
+        'ed_bot_wt_total': '0.08',
+        'ed_diag_vol_formula': '4 diag × 2.8m × 0.002 m²',
+        'ed_diag_qty': '4',
+        'ed_diag_vol_total': '0.022 m³',
+        'ed_diag_wt_single': '0.044',
+        'ed_diag_wt_total': '0.18',
         'concrete_deck_vol_formula': '30m x 10m x 0.25m',
         'concrete_deck_qty': '1',
         'concrete_deck_vol_total': '75.0',
@@ -578,10 +710,208 @@ def build_mock_payload():
             'deck.report.w_dl': 6.25,
         },
 
-        # Analysis summary
+        # Analysis summary with per-load-case data for Chapter 4 table
         'analysis_summary': {
+            'load_cases': {
+                'ULS-01: 1.35DL + 1.50LL': {
+                    'max_bm': 4250.0, 'bm_girder': 'G1', 'bm_location': 15.0,
+                    'max_sf': 580.0, 'sf_girder': 'G1', 'sf_location': 0.0,
+                },
+                'ULS-02: 1.35DL + 1.50LL + 0.9WL': {
+                    'max_bm': 3980.0, 'bm_girder': 'G1', 'bm_location': 15.0,
+                    'max_sf': 545.0, 'sf_girder': 'G1', 'sf_location': 0.0,
+                },
+                'ULS-03: 1.35DL + 1.50WL + 0.75LL': {
+                    'max_bm': 3620.0, 'bm_girder': 'G2', 'bm_location': 15.0,
+                    'max_sf': 498.0, 'sf_girder': 'G1', 'sf_location': 0.0,
+                },
+                'SLS-Frequent: 1.0DL + 0.75LL': {
+                    'max_bm': 2850.0, 'bm_girder': 'G1', 'bm_location': 15.0,
+                    'max_sf': 390.0, 'sf_girder': 'G1', 'sf_location': 0.0,
+                },
+                'SLS-Rare: 1.0DL + 1.0LL': {
+                    'max_bm': 3450.0, 'bm_girder': 'G1', 'bm_location': 15.0,
+                    'max_sf': 470.0, 'sf_girder': 'G1', 'sf_location': 0.0,
+                },
+                'Construction: 1.35DL (steel only)': {
+                    'max_bm': 2200.0, 'bm_girder': 'G1', 'bm_location': 15.0,
+                    'max_sf': 295.0, 'sf_girder': 'G1', 'sf_location': 0.0,
+                },
+            },
+            'reactions': {
+                'ULS-01: 1.35DL + 1.50LL': {'left_kN': 580.0, 'right_kN': 580.0},
+                'ULS-02: 1.35DL + 1.50LL + 0.9WL': {'left_kN': 545.0, 'right_kN': 545.0},
+                'ULS-03: 1.35DL + 1.50WL + 0.75LL': {'left_kN': 498.0, 'right_kN': 498.0},
+                'SLS-Frequent: 1.0DL + 0.75LL': {'left_kN': 390.0, 'right_kN': 390.0},
+                'SLS-Rare: 1.0DL + 1.0LL': {'left_kN': 470.0, 'right_kN': 470.0},
+                'Construction: 1.35DL (steel only)': {'left_kN': 295.0, 'right_kN': 295.0},
+            },
             'max_bm': '4250 kN-m', 'max_sf': '580 kN', 'max_defl': '12.5 mm',
         },
+
+        # Deflection data per girder (KEY_SD_DEFL_LIVE, KEY_SD_DEFL_TOTAL)
+        'steeldesign.deflection.live_mm.G1': 12.5,
+        'steeldesign.deflection.live_mm.G2': 11.8,
+        'steeldesign.deflection.live_mm.G3': 11.8,
+        'steeldesign.deflection.live_mm.G4': 12.5,
+        'steeldesign.deflection.total_mm.G1': 18.2,
+        'steeldesign.deflection.total_mm.G2': 17.1,
+        'steeldesign.deflection.total_mm.G3': 17.1,
+        'steeldesign.deflection.total_mm.G4': 18.2,
+
+        # ── Section properties — BASE keys (used by chap5.py _render_value) ──
+        'steeldesign.details.section_properties.iz': '1.85 × 10⁴ cm⁴',
+        'steeldesign.details.section_properties.zz': '30833 cm³',
+        'steeldesign.details.section_properties.zuz': '35280 cm³',
+        'steeldesign.details.section_properties.area': '348 cm²',
+        'steeldesign.details.section_properties.pna_depth': '600',
+        'steeldesign.details.section_properties.mass': '273.2 kg/m',
+        'steeldesign.details.section_properties.composite_iz': '3.42 × 10⁴ cm⁴',
+        'steeldesign.details.total_depth': '1200',
+        'steeldesign.details.top_flange_width': '400',
+        'steeldesign.details.bottom_flange_width': '400',
+        'steeldesign.details.top_flange_thickness': '25',
+        'steeldesign.details.bottom_flange_thickness': '25',
+        'steeldesign.details.web_thickness': '12',
+        'steeldesign.details.effective_slab_width': '2500',
+        'steeldesign.details.section_class': 'Plastic',
+        'steeldesign.details.classification.flange_class': 'Plastic',
+        'steeldesign.details.classification.web_class': 'Plastic',
+        'steeldesign.details.classification.flange_slenderness': '7.5',
+        'steeldesign.details.classification.web_slenderness': '95.8',
+        'steeldesign.details.classification.flange_class_limit': '9.4',
+        'steeldesign.details.classification.web_class_limit': '105.0',
+        'steeldesign.details.moment.md_capacity': '4885',
+        'steeldesign.details.moment.mu_applied': '4250',
+        'steeldesign.details.shear_check.vu_applied': '780',
+        'steeldesign.details.shear_check.av_area': '13800',
+        'steeldesign.details.shear_check.kv': '5.35',
+        'steeldesign.details.shear_check.lambda_w': '0.91',
+        'steeldesign.details.shear_check.tau_b': '115.6',
+        'steeldesign.details.shear_check.vcr': '1595',
+        'steeldesign.details.ltb.mcr': '6520',
+        'steeldesign.details.ltb.lambda_lt': '0.866',
+        'steeldesign.details.ltb.chi_lt': '0.712',
+        'steeldesign.details.ltb.mb': '3480',
+        'steeldesign.details.interaction.high_shear': 'No (V < 0.6 Vd)',
+        'steeldesign.details.interaction.mdv': '4885',
+        'steeldesign.details.interaction.mn_axial': 0.0,
+        'steeldesign.details.interaction.mn_moment': 0.87,
+        'steeldesign.details.interaction.mn_ratio': 0.87,
+        'steeldesign.details.stiffener_summary.method': 'Tension Field Action',
+        'steeldesign.details.stiffener_summary.end_count': '2 per bearing',
+        'steeldesign.details.stiffener_summary.end_thickness': '20 mm',
+        'steeldesign.details.stiffener_summary.int_spacing': '1500 mm',
+        'steeldesign.details.stiffener_summary.int_thickness': '12 mm',
+        'steeldesign.details.stiffener_summary.longitudinal': 'Not required',
+        'steeldesign.details.bearing_stiffener.reaction': '780',
+        'steeldesign.details.bearing_stiffener.fcd': '227',
+        'steeldesign.details.bearing_stiffener.fcdw_lc': '195',
+        'steeldesign.details.bearing_stiffener.fcdw_wb': '210',
+        'steeldesign.details.bearing_stiffener.fpsd': '320',
+        'steeldesign.details.int_stiffener.fq': '115',
+        'steeldesign.details.int_stiffener.fqd': '165',
+        'steeldesign.details.int_stiffener.iys_min': '120',
+        'steeldesign.details.int_stiffener.iys_prov': '185',
+        'steeldesign.details.shear_check.panel_cd': '210',
+        'steeldesign.stress.steel': '195',
+        'steeldesign.stress.steel.allowable': '217',
+        'steeldesign.deflection.live_mm': '12.5',
+        'steeldesign.deflection.total_mm': '18.2',
+        'steeldesign.deflection.allow_live_mm': '37.5',
+        'steeldesign.deflection.allow_total_mm': '50.0',
+        'steeldesign.uls_per_girder': '4250 kN-m',
+        'steeldesign.transverse_shear.vl_kN_per_m': '185',
+        'steeldesign.transverse_shear.vrd_kN_per_m': '450',
+        'steeldesign.shear_connector.qu_kN': '58.2',
+        'steeldesign.shear_connector.qr_kN': '46.6',
+        'steeldesign.shear_connector.sl1_mm': '150',
+        'steeldesign.shear_connector.sl2_mm': '300',
+        'steeldesign.shear_connector.sr_mm': '120',
+        'steeldesign.shear_connector.edge_distance_mm': '30',
+        'steeldesign.shear_connector.req_edge_distance_mm': '25',
+        'steeldesign.shear_connector.d_limit_mm': '22',
+
+        # ── Per-girder keys (kept for any per-girder accessor paths) ──
+        'steeldesign.details.section_properties.iz.G1.M1': 1.85e10,
+        'steeldesign.details.section_properties.iz.G2.M1': 1.85e10,
+        'steeldesign.details.section_properties.iz.G3.M1': 1.85e10,
+        'steeldesign.details.section_properties.iz.G4.M1': 1.85e10,
+        'steeldesign.details.section_properties.zz.G1.M1': 30833.3,
+        'steeldesign.details.section_properties.zz.G2.M1': 30833.3,
+        'steeldesign.details.section_properties.zz.G3.M1': 30833.3,
+        'steeldesign.details.section_properties.zz.G4.M1': 30833.3,
+        'steeldesign.details.section_properties.zuz.G1.M1': 35280.0,
+        'steeldesign.details.section_properties.zuz.G2.M1': 35280.0,
+        'steeldesign.details.section_properties.zuz.G3.M1': 35280.0,
+        'steeldesign.details.section_properties.zuz.G4.M1': 35280.0,
+        'steeldesign.details.section_properties.area.G1.M1': 34800.0,
+        'steeldesign.details.section_properties.area.G2.M1': 34800.0,
+        'steeldesign.details.section_properties.area.G3.M1': 34800.0,
+        'steeldesign.details.section_properties.area.G4.M1': 34800.0,
+        'steeldesign.details.section_properties.pna_depth.G1.M1': 600.0,
+        'steeldesign.details.section_properties.pna_depth.G2.M1': 600.0,
+        'steeldesign.details.section_properties.pna_depth.G3.M1': 600.0,
+        'steeldesign.details.section_properties.pna_depth.G4.M1': 600.0,
+        'steeldesign.details.section_properties.mass.G1.M1': 273.2,
+        'steeldesign.details.section_properties.mass.G2.M1': 273.2,
+        'steeldesign.details.section_properties.mass.G3.M1': 273.2,
+        'steeldesign.details.section_properties.mass.G4.M1': 273.2,
+        'steeldesign.details.section_properties.composite_iz.G1.M1': 3.42e10,
+        'steeldesign.details.section_properties.composite_iz.G2.M1': 3.42e10,
+        'steeldesign.details.section_properties.composite_iz.G3.M1': 3.42e10,
+        'steeldesign.details.section_properties.composite_iz.G4.M1': 3.42e10,
+
+        # Section classification per-girder
+        'steeldesign.details.section_class.G1.M1': 'Plastic',
+        'steeldesign.details.section_class.G2.M1': 'Plastic',
+        'steeldesign.details.section_class.G3.M1': 'Plastic',
+        'steeldesign.details.section_class.G4.M1': 'Plastic',
+        'steeldesign.details.classification.flange_class.G1.M1': 'Plastic',
+        'steeldesign.details.classification.web_class.G1.M1': 'Plastic',
+        'steeldesign.details.classification.flange_slenderness.G1.M1': 7.5,
+        'steeldesign.details.classification.web_slenderness.G1.M1': 95.8,
+        'steeldesign.details.classification.flange_class_limit.G1.M1': 9.4,
+        'steeldesign.details.classification.web_class_limit.G1.M1': 105.0,
+
+        # Moment capacity per-girder
+        'steeldesign.details.moment.md_capacity.G1.M1': 4885.0,
+        'steeldesign.details.moment.md_capacity.G2.M1': 4885.0,
+        'steeldesign.details.moment.md_capacity.G3.M1': 4885.0,
+        'steeldesign.details.moment.md_capacity.G4.M1': 4885.0,
+        'steeldesign.details.moment.mu_applied.G1.M1': 4250.0,
+
+        # Shear capacity per-girder
+        'steeldesign.details.shear_check.vd.G1.M1': 935.0,
+        'steeldesign.details.shear_check.vd.G2.M1': 935.0,
+        'steeldesign.details.shear_check.vd.G3.M1': 935.0,
+        'steeldesign.details.shear_check.vd.G4.M1': 935.0,
+
+        # LTB per-girder
+        'steeldesign.details.ltb.mcr.G1.M1': 6520.0,
+        'steeldesign.details.ltb.lambda_lt.G1.M1': 0.866,
+        'steeldesign.details.ltb.chi_lt.G1.M1': 0.712,
+        'steeldesign.details.ltb.mb.G1.M1': 3480.0,
+
+        # Effective slab width per-girder
+        'steeldesign.details.effective_slab_width.G1.M1': 2500.0,
+        'steeldesign.details.effective_slab_width.G2.M1': 2500.0,
+        'steeldesign.details.effective_slab_width.G3.M1': 2500.0,
+        'steeldesign.details.effective_slab_width.G4.M1': 2500.0,
+
+        # Steel grade
+        'steeldesign.details.grade_of_material': 'E 350 (Fe 490)',
+        'steeldesign.details.total_depth.G1.M1': 1200.0,
+        'steeldesign.details.web_thickness.G1.M1': 12.0,
+        'steeldesign.details.top_flange_width.G1.M1': 400.0,
+        'steeldesign.details.bottom_flange_width.G1.M1': 400.0,
+        'steeldesign.details.bottom_flange_thickness.G1.M1': 25.0,
+
+        # ── Utilization ratios (percentage values, divided by 100 in chap5) ──
+        'util.flexure': 87.0,        # Mu/Md = 4250/4885 ≈ 0.87
+        'util.shear': 48.8,          # Vu/Vcr = 780/1595 ≈ 0.49
+        'util.interaction': 87.0,    # M-V interaction
+        'util.ltb': 71.2,            # Mu/Mb = 4250/3480... but capped by chi_lt
 
         # Design log
         'design_log': [
