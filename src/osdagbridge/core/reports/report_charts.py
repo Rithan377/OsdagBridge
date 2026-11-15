@@ -92,7 +92,7 @@ def generate_ur_summary_chart(output_dict, input_dict, save_dir):
                 for ft in ("tension", "compression"):
                     ftdata = mdata.get(ft, {})
                     if isinstance(ftdata, dict):
-                        eff = ftdata.get("efficiency") or ftdata.get("ur")
+                        eff = ftdata.get("efficiency") or ftdata.get("ur") or ftdata.get("Member.efficiency")
                         if eff is not None:
                             try:
                                 max_cb_ur = max(max_cb_ur, float(eff))
@@ -116,7 +116,7 @@ def generate_ur_summary_chart(output_dict, input_dict, save_dir):
                 for ft in ("tension", "compression"):
                     ftdata = mdata.get(ft, {})
                     if isinstance(ftdata, dict):
-                        eff = ftdata.get("efficiency") or ftdata.get("ur")
+                        eff = ftdata.get("efficiency") or ftdata.get("ur") or ftdata.get("Member.efficiency")
                         if eff is not None:
                             try:
                                 max_ed_ur = max(max_ed_ur, float(eff))
@@ -140,27 +140,30 @@ def generate_ur_summary_chart(output_dict, input_dict, save_dir):
         fig.patch.set_facecolor(CHART_BG_COLOR)
         ax.set_facecolor(CHART_BG_COLOR)
 
-        bars = ax.barh(labels, values, color=colors, edgecolor='#333333',
-                       linewidth=0.5, height=0.55)
+        x_pos = range(len(labels))
+        bars = ax.bar(x_pos, values, color=colors, edgecolor='#333333',
+                      linewidth=0.5, width=0.55)
 
-        # Threshold line
-        ax.axvline(x=CHART_THRESHOLD, color='#E74C3C', linestyle='--',
+        # Horizontal threshold line
+        ax.axhline(y=CHART_THRESHOLD, color='#E74C3C', linestyle='--',
                    linewidth=1.8, label=f'Threshold (UR = {CHART_THRESHOLD})')
 
         # Value labels on bars
         for bar, val in zip(bars, values):
-            ax.text(bar.get_width() + 0.02, bar.get_y() + bar.get_height() / 2,
-                    f'{val:.3f}', va='center', fontsize=CHART_FONT_SIZE - 1,
-                    fontweight='bold')
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
+                    f'{val:.3f}', ha='center', va='bottom',
+                    fontsize=CHART_FONT_SIZE - 1, fontweight='bold')
 
-        ax.set_xlabel('Utilization Ratio (Demand / Capacity)',
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(labels, fontsize=CHART_FONT_SIZE - 1, rotation=30,
+                           ha='right')
+        ax.set_ylabel('Utilization Ratio (Demand / Capacity)',
                       fontsize=CHART_FONT_SIZE)
         ax.set_title('Overall Utilization Ratio Summary',
                      fontsize=CHART_TITLE_SIZE, fontweight='bold', pad=12)
-        ax.legend(loc='lower right', fontsize=CHART_FONT_SIZE - 1)
-        ax.set_xlim(0, max(max(values) * 1.25, 1.3))
+        ax.legend(loc='upper right', fontsize=CHART_FONT_SIZE - 1)
+        ax.set_ylim(0, max(max(values) * 1.25, 1.3))
         ax.tick_params(axis='both', labelsize=CHART_FONT_SIZE - 1)
-        ax.invert_yaxis()
 
         plt.tight_layout()
         path = os.path.join(save_dir, 'ur_summary_chart.png')
@@ -205,6 +208,7 @@ def generate_boq_steel_chart(input_dict, save_dir):
             ("CB — Top Chord",            "bracing_top_wt_total"),
             ("CB — Bottom Chord",         "bracing_bot_wt_total"),
             ("CB — Diagonal",             "bracing_diag_wt_total"),
+            ("End Diaphragms",            "end_diaphragm_wt_total"),
             ("Shear Stud\nConnectors",    "shear_studs_wt_total"),
         ]
 

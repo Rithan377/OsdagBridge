@@ -119,6 +119,12 @@ from osdagbridge.core.utils.common import (
 )
 
 from osdagbridge.core.reports.report_utils import _tex
+from osdagbridge.core.reports.styles import (
+    OSDAG_GREEN, HEADER_BG, DOCUMENT_FONT_SIZE,
+    FOOTER_SD_VSPACE, FOOTER_RULE_VSPACE,
+    PAGE_TOP_MARGIN, PAGE_BOTTOM_MARGIN, PAGE_LEFT_MARGIN, PAGE_RIGHT_MARGIN,
+    HEAD_HEIGHT, HEAD_SEP, FOOT_SKIP,
+)
 from .executive_summary import executive_summary
 from .chap1 import ch1_project_info
 from .chap2 import ch2_input_parameters
@@ -152,11 +158,16 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
     jn = _tex(job_number)
     rd = _tex(report_date)
     rv = _tex(report_version)
+    # Page geometry from centralized styles module
+    _geom_opts = (f"a4paper, top={PAGE_TOP_MARGIN}, bottom={PAGE_BOTTOM_MARGIN}, "
+                  f"left={PAGE_LEFT_MARGIN}, right={PAGE_RIGHT_MARGIN}, "
+                  f"headheight={HEAD_HEIGHT}, headsep={HEAD_SEP}, "
+                  f"footskip={FOOT_SKIP}")
     return r"""
 \documentclass[12pt,a4paper]{report}
 
-% Packages
-\usepackage[a4paper, top=25mm, bottom=28mm, left=20mm, right=20mm, headheight=16pt, headsep=14pt, footskip=18pt]{geometry}
+% Packages — geometry driven by styles.py (centralized formatting module)
+\usepackage[""" + _geom_opts + r"""]{geometry}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}

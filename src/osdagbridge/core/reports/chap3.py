@@ -84,7 +84,7 @@ def ch3_loads(input_dict):
                 vehicles.append(c)
                 
     # --- Build per-vehicle rows for Table 3.3(a) ---
-    vehicle_rows = []
+    # (populated after IRC6_2017 import and span computation below)
     vehicle_list = []
     if input_dict.get(KEY_LL_IRC_CLASS_A):
         vehicle_list.append(("Class A", "Class A"))
@@ -102,26 +102,6 @@ def ch3_loads(input_dict):
         vehicle_list.append(("Class 70R (Bogie)", "AA/70R"))
     if input_dict.get(KEY_LL_IRC_CLASS_FATIGUE):
         vehicle_list.append(("Class Fatigue", "Fatigue"))
-
-    # Build per-vehicle impact factor
-    for vname, vcat in vehicle_list:
-        if vcat == "Class A":
-            im_str = f"{1.0 + im_a:.3f}" if 'im_a' in dir() else "N/A"
-            try:
-                im_str = f"{1.0 + IRC6_2017.cl_208_2_impact_factor(span_m):.3f}"
-            except Exception:
-                im_str = "N/A"
-        elif vcat == "AA/70R":
-            try:
-                im_str = f"{1.0 + IRC6_2017.cl_208_3_impact_factor(span_m):.3f}"
-            except Exception:
-                im_str = "N/A"
-        else:
-            im_str = "N/A"
-        vehicle_rows.append(
-            r"\textnormal{" + _tex(vname) + r"} & " + _tex(im_str) + r" & " + _tex(braking_force_str) + r" \\[6pt]" + "\n\\hline"
-        )
-    vehicle_rows_str = "\n".join(vehicle_rows) if vehicle_rows else r"\textnormal{None selected} & N/A & N/A \\[6pt]" + "\n\\hline"
 
     vehicles_str = ", ".join(vehicles) if vehicles else "None"
 
@@ -169,6 +149,35 @@ def ch3_loads(input_dict):
             braking_force_str = "N/A"
     else:
         braking_force_str = "N/A"
+
+    # --- Build per-vehicle rows for Table 3.3(a) with impact factor and centrifugal force ---
+    vehicle_rows = []
+    span_m_val = float(span) if span not in (None, "") else 0.0
+    for vname, vcat in vehicle_list:
+        # Impact factor per vehicle category
+        if vcat == "Class A":
+            try:
+                im_str = f"{1.0 + IRC6_2017.cl_208_2_impact_factor(span_m_val):.3f}"
+            except Exception:
+                im_str = "N/A"
+        elif vcat == "AA/70R":
+            try:
+                im_str = f"{1.0 + IRC6_2017.cl_208_3_impact_factor(span_m_val):.3f}"
+            except Exception:
+                im_str = "N/A"
+        else:
+            im_str = "N/A"
+        # Centrifugal force (IRC 6 Cl. 212) — depends on speed and radius
+        cf_str = "As per IRC 6 Cl. 212"
+        vehicle_rows.append(
+            r"\textnormal{" + _tex(vname) + r"} & "
+            + _tex(im_str) + r" & "
+            + _tex(braking_force_str) + r" & "
+            + _tex(cf_str) + r" \\[6pt]" + "\n\\hline"
+        )
+    vehicle_rows_str = "\n".join(vehicle_rows) if vehicle_rows else (
+        r"\textnormal{---} & --- & --- & --- \\[6pt]" + "\n\\hline"
+    )
 
     fp_mode  = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_MODE, "")
     fp_value = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_VALUE, "")
@@ -350,14 +359,14 @@ This section summarizes all loads applied to the bridge and the load combination
 \end{longtable}
 
 \vspace{1em}
-\begin{longtable}{|L{4.5cm}|C{3.0cm}|C{4.0cm}|}
+\begin{longtable}{|L{3.8cm}|C{2.2cm}|C{3.5cm}|C{3.5cm}|}
 \caption{\textbf{Vehicle Live Loads (LL) --- Table 3.3(a)}}
 \hline
-\textbf{Vehicle Class} & \textbf{Impact Factor} & \textbf{Braking Force} \\
+\textbf{Vehicle Class} & \textbf{Impact Factor} & \textbf{Braking Force (kN)} & \textbf{Centrifugal Force} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Vehicle Class} & \textbf{Impact Factor} & \textbf{Braking Force} \\
+\textbf{Vehicle Class} & \textbf{Impact Factor} & \textbf{Braking Force (kN)} & \textbf{Centrifugal Force} \\
 \hline
 \endhead
 """ + vehicle_rows_str + r"""
