@@ -147,72 +147,139 @@ def _generate_placeholder_figures(save_dir):
     fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
     figs['defl_ll'] = p
 
-    # ── Plate Girder Elevation ──
+    # ── 3D View of Plate Girders (Fig 6.4) ──
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.set_xlim(-1, 31); ax.set_ylim(-2, 3)
-    # Web
+    ax.set_xlim(-1, 35); ax.set_ylim(-3, 12)
+    for i in range(4):
+        z = i * 2.5
+        ax.plot([0 + i*1.2, 30 + i*1.2], [z + 1.2, z + 1.2], '#2060A0', lw=2.5)
+        ax.plot([0 + i*1.2, 30 + i*1.2], [z, z], '#2060A0', lw=1.5)
+        ax.plot([0 + i*1.2, 30 + i*1.2], [z - 1.2, z - 1.2], '#2060A0', lw=2.5)
+        for sx in range(0, 31, 5):
+            ax.plot([sx + i*1.2, sx + i*1.2], [z - 1.2, z + 1.2], '#A0A0A0', lw=1)
+        ax.text(15 + i*1.2, z + 1.6, f'Girder G{i+1}', ha='center', fontsize=8, color='#2060A0')
+    ax.set_title('3D View of Steel Plate Girders', fontsize=12, fontweight='bold')
+    ax.axis('off')
+    p = os.path.join(save_dir, 'girder_3d.png')
+    fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+    figs['girder_3d'] = p
+
+    # ── Cross Section of Plate Girder (Fig 6.5) ──
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.set_xlim(-300, 300); ax.set_ylim(-750, 800)
+    ax.add_patch(patches.Rectangle((-200, 575), 400, 25, facecolor='#2060A0', edgecolor='black', lw=1.5))
+    ax.add_patch(patches.Rectangle((-200, -600), 400, 25, facecolor='#2060A0', edgecolor='black', lw=1.5))
+    ax.add_patch(patches.Rectangle((-6, -575), 12, 1150, facecolor='#6090D0', edgecolor='black', lw=1.2))
+    for sx in [-75, 75]:
+        ax.add_patch(patches.Rectangle((sx-11, 600), 22, 100, facecolor='#FFA500', edgecolor='black', lw=1))
+        ax.add_patch(patches.Circle((sx, 700), 16, facecolor='#FFA500', edgecolor='black', lw=1))
+    ax.text(0, 730, 'Shear Studs (2 nos. \u03c622)', ha='center', fontsize=8, fontweight='bold')
+    ax.annotate('Top Flange: 400 \u00d7 25 mm', xy=(200, 587.5), xytext=(220, 600),
+                arrowprops=dict(arrowstyle='->', color='black'), fontsize=8)
+    ax.annotate('Web: 1150 \u00d7 12 mm', xy=(6, 0), xytext=(40, 0),
+                arrowprops=dict(arrowstyle='->', color='black'), fontsize=8)
+    ax.annotate('Bottom Flange: 400 \u00d7 25 mm', xy=(200, -587.5), xytext=(220, -580),
+                arrowprops=dict(arrowstyle='->', color='black'), fontsize=8)
+    ax.annotate('', xy=(-240, -600), xytext=(-240, 600), arrowprops=dict(arrowstyle='<->', color='black'))
+    ax.text(-260, 0, 'D = 1200 mm', va='center', ha='right', fontsize=9, rotation=90)
+    ax.set_title('Cross Section of Plate Girder', fontsize=12, fontweight='bold')
+    ax.axis('off'); ax.set_aspect('equal')
+    p = os.path.join(save_dir, 'section_preview.png')
+    fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+    figs['section_preview'] = p
+
+    # ── Side View of Girder / Stiffeners (Fig 6.6) ──
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.set_xlim(-1, 31); ax.set_ylim(-2, 2.5)
     ax.add_patch(patches.Rectangle((0, -0.6), 30, 1.2, facecolor='#D4E6FF', edgecolor='#2060A0', linewidth=1.5))
-    # Top flange
     ax.add_patch(patches.Rectangle((-0.05, 0.6), 30.1, 0.15, facecolor='#2060A0', edgecolor='black', linewidth=1))
-    # Bottom flange
     ax.add_patch(patches.Rectangle((-0.05, -0.75), 30.1, 0.15, facecolor='#2060A0', edgecolor='black', linewidth=1))
-    # Stiffeners
-    for sx in range(0, 31, 5):
-        ax.plot([sx, sx], [-0.6, 0.6], color='#A0A0A0', linewidth=1, linestyle='-')
-    # Bearing stiffeners
+    for sx in range(0, 31, 3):
+        ax.plot([sx, sx], [-0.6, 0.6], color='#808080', linewidth=1, linestyle='-')
     for sx in [0, 30]:
         ax.add_patch(patches.Rectangle((sx-0.15, -0.75), 0.3, 1.5, facecolor='#FF8C00', edgecolor='black', linewidth=1.5))
-    # Dimensions
-    ax.annotate('', xy=(0, -1.3), xytext=(30, -1.3), arrowprops=dict(arrowstyle='<->', color='black'))
-    ax.text(15, -1.5, '30,000 mm (Span)', ha='center', fontsize=9)
-    ax.annotate('', xy=(31, -0.75), xytext=(31, 0.75), arrowprops=dict(arrowstyle='<->', color='black'))
-    ax.text(31.5, 0, '1200mm', ha='left', fontsize=8, rotation=90, va='center')
-    ax.set_title('Plate Girder — Elevation View', fontsize=12, fontweight='bold')
-    ax.set_aspect('equal'); ax.axis('off')
-    p = os.path.join(save_dir, 'girder_elevation.png')
+    ax.annotate('', xy=(0, -1.1), xytext=(30, -1.1), arrowprops=dict(arrowstyle='<->', color='black'))
+    ax.text(15, -1.3, 'Span: 30,000 mm (Intermediate stiffeners @ 1500 mm)', ha='center', fontsize=9)
+    ax.set_title('Side View of Girder (Stiffener Layout)', fontsize=12, fontweight='bold')
+    ax.axis('off')
+    p = os.path.join(save_dir, 'stiffener_preview.png')
     fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
-    figs['girder_elevation'] = p
+    figs['stiffener_preview'] = p
 
-    # ── Cross-Bracing Layout ──
+    # ── Cross-Bracing Layout (Fig 6.7) ──
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.set_xlim(-0.5, 3); ax.set_ylim(-1.5, 1.5)
-    # Girders (vertical)
     for gx in [0, 2.5]:
-        ax.add_patch(patches.Rectangle((gx-0.05, -1.2), 0.1, 2.4, facecolor='#2060A0', edgecolor='black'))
-    # Top chord
-    ax.plot([0, 2.5], [1.0, 1.0], 'g-', linewidth=3, label='Top Chord')
-    # Bottom chord
-    ax.plot([0, 2.5], [-1.0, -1.0], 'g-', linewidth=3, label='Bottom Chord')
-    # X-bracing diagonals
-    ax.plot([0, 2.5], [-1.0, 1.0], 'r-', linewidth=2, label='Diagonal')
-    ax.plot([0, 2.5], [1.0, -1.0], 'r-', linewidth=2)
-    ax.text(0, 1.3, 'G1', ha='center', fontweight='bold')
-    ax.text(2.5, 1.3, 'G2', ha='center', fontweight='bold')
+        ax.add_patch(patches.Rectangle((gx-0.08, -1.2), 0.16, 2.4, facecolor='#2060A0', edgecolor='black'))
+    ax.plot([0, 2.5], [1.0, 1.0], 'g-', linewidth=3, label='Top Chord (ISA 100\u00d7100\u00d710)')
+    ax.plot([0, 2.5], [-1.0, -1.0], 'g-', linewidth=3, label='Bottom Chord (ISA 100\u00d7100\u00d710)')
+    ax.plot([0, 2.5], [-1.0, 1.0], 'r-', linewidth=2.5, label='Diagonal (ISA 100\u00d7100\u00d710)')
+    ax.plot([0, 2.5], [1.0, -1.0], 'r-', linewidth=2.5)
+    ax.text(0, 1.3, 'G1', ha='center', fontweight='bold', fontsize=10)
+    ax.text(2.5, 1.3, 'G2', ha='center', fontweight='bold', fontsize=10)
     ax.set_title('Cross-Bracing Layout (X-Type)', fontsize=12, fontweight='bold')
     ax.legend(loc='lower right', fontsize=8)
-    ax.set_aspect('equal'); ax.axis('off')
-    p = os.path.join(save_dir, 'cross_bracing_layout.png')
+    ax.axis('off'); ax.set_aspect('equal')
+    p = os.path.join(save_dir, 'cb_diagram.png')
     fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
-    figs['cross_bracing_layout'] = p
+    figs['cb_diagram'] = p
 
-    # ── End Diaphragm Layout ──
+    # ── Cross Bracing Sections: Bracing, Top Chord, Bottom Chord (Figs 6.8, 6.9, 6.10) ──
+    for sec_name, title, fname in [
+        ('cb_bracing', 'Bracing Section', 'cb_bracing.png'),
+        ('cb_top_chord', 'Top Chord Section', 'cb_top_chord.png'),
+        ('cb_bottom_chord', 'Bottom Chord Section', 'cb_bottom_chord.png'),
+    ]:
+        fig, ax = plt.subplots(figsize=(4, 4))
+        ax.set_xlim(-20, 120); ax.set_ylim(-20, 120)
+        ax.add_patch(patches.Rectangle((0, 0), 10, 100, facecolor='#2060A0', edgecolor='black', lw=1.5))
+        ax.add_patch(patches.Rectangle((0, 0), 100, 10, facecolor='#2060A0', edgecolor='black', lw=1.5))
+        ax.text(50, 15, '100 mm', ha='center', fontsize=8)
+        ax.text(15, 50, '100 mm', va='center', rotation=90, fontsize=8)
+        ax.text(50, -15, 'ISA 100 \u00d7 100 \u00d7 10', ha='center', fontsize=9, fontweight='bold')
+        ax.set_title(title, fontsize=10, fontweight='bold')
+        ax.axis('off'); ax.set_aspect('equal')
+        p = os.path.join(save_dir, fname)
+        fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+        figs[sec_name] = p
+
+    # ── End Diaphragm Layout (Fig 6.11) ──
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.set_xlim(-0.5, 3); ax.set_ylim(-1.5, 1.5)
     for gx in [0, 2.5]:
-        ax.add_patch(patches.Rectangle((gx-0.05, -1.2), 0.1, 2.4, facecolor='#2060A0', edgecolor='black'))
+        ax.add_patch(patches.Rectangle((gx-0.08, -1.2), 0.16, 2.4, facecolor='#2060A0', edgecolor='black'))
     ax.plot([0, 2.5], [0.8, 0.8], 'g-', linewidth=3, label='Top Chord')
     ax.plot([0, 2.5], [-0.8, -0.8], 'g-', linewidth=3, label='Bottom Chord')
     ax.plot([0, 2.5], [-0.8, 0.8], 'r-', linewidth=2.5, label='Diagonal')
     ax.plot([0, 2.5], [0.8, -0.8], 'r-', linewidth=2.5)
-    ax.text(0, 1.1, 'G1', ha='center', fontweight='bold')
-    ax.text(2.5, 1.1, 'G2', ha='center', fontweight='bold')
+    ax.text(0, 1.1, 'G1', ha='center', fontweight='bold', fontsize=10)
+    ax.text(2.5, 1.1, 'G2', ha='center', fontweight='bold', fontsize=10)
     ax.text(1.25, -1.3, 'End Diaphragm at Bearing', ha='center', fontsize=9, style='italic')
     ax.set_title('End Diaphragm Layout (X-Type)', fontsize=12, fontweight='bold')
     ax.legend(loc='lower right', fontsize=8)
-    ax.set_aspect('equal'); ax.axis('off')
-    p = os.path.join(save_dir, 'end_diaphragm_layout.png')
+    ax.axis('off'); ax.set_aspect('equal')
+    p = os.path.join(save_dir, 'ed_diagram.png')
     fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
-    figs['end_diaphragm_layout'] = p
+    figs['ed_diagram'] = p
+
+    # ── End Diaphragm Sections (Figs 6.12, 6.13, 6.14) ──
+    for sec_name, title, fname in [
+        ('ed_bracing', 'ED Bracing Section', 'ed_bracing.png'),
+        ('ed_top_chord', 'ED Top Chord Section', 'ed_top_chord.png'),
+        ('ed_bottom_chord', 'ED Bottom Chord Section', 'ed_bottom_chord.png'),
+    ]:
+        fig, ax = plt.subplots(figsize=(4, 4))
+        ax.set_xlim(-20, 120); ax.set_ylim(-20, 120)
+        ax.add_patch(patches.Rectangle((0, 0), 10, 100, facecolor='#2060A0', edgecolor='black', lw=1.5))
+        ax.add_patch(patches.Rectangle((0, 0), 100, 10, facecolor='#2060A0', edgecolor='black', lw=1.5))
+        ax.text(50, 15, '100 mm', ha='center', fontsize=8)
+        ax.text(15, 50, '100 mm', va='center', rotation=90, fontsize=8)
+        ax.text(50, -15, 'ISA 100 \u00d7 100 \u00d7 10', ha='center', fontsize=9, fontweight='bold')
+        ax.set_title(title, fontsize=10, fontweight='bold')
+        ax.axis('off'); ax.set_aspect('equal')
+        p = os.path.join(save_dir, fname)
+        fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
+        figs[sec_name] = p
 
     return figs
 
@@ -555,6 +622,126 @@ def build_mock_payload():
                         },
                     },
                 },
+                'G2': {
+                    'checks': [
+                        {'check_id': 1, 'name': 'Moment', 'dcr': 0.86, 'status': 'PASS',
+                         'demand': 4180, 'capacity': 4885, 'demand_unit': 'kN-m', 'capacity_unit': 'kN-m'},
+                        {'check_id': 2, 'name': 'Shear', 'dcr': 0.60, 'status': 'PASS',
+                         'demand': 560, 'capacity': 935, 'demand_unit': 'kN', 'capacity_unit': 'kN'},
+                        {'check_id': 5, 'name': 'LTB (Construction)', 'dcr': 0.44, 'status': 'PASS',
+                         'demand': 2150, 'capacity': 4885, 'demand_unit': 'kN-m', 'capacity_unit': 'kN-m'},
+                        {'check_id': 8, 'name': 'Fatigue — Normal Stress', 'dcr': 0.53, 'status': 'PASS',
+                         'demand': 63, 'capacity': 118, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 9, 'name': 'Fatigue — Shear Stress', 'dcr': 0.40, 'status': 'PASS',
+                         'demand': 33, 'capacity': 83, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 11, 'name': 'Stress Limitation', 'dcr': 0.76, 'status': 'PASS',
+                         'demand': 228, 'capacity': 300, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 13, 'name': 'Deflection (LL)', 'dcr': 0.49, 'status': 'PASS',
+                         'demand': 11.8, 'capacity': 24.0, 'demand_unit': 'mm', 'capacity_unit': 'mm'},
+                        {'check_id': 16, 'name': 'Transverse Shear', 'dcr': 0.36, 'status': 'PASS',
+                         'demand': 90, 'capacity': 250, 'demand_unit': 'kN', 'capacity_unit': 'kN'},
+                    ],
+                    'per_lc': {
+                        'ULS-01: 1.35DL + 1.50LL': {
+                            'max_dcr': 0.86,
+                            'checks': [
+                                {'id': 1, 'dcr': 0.86, 'demand': 4180, 'capacity': 4885},
+                                {'id': 2, 'dcr': 0.60, 'demand': 560, 'capacity': 935},
+                                {'id': 5, 'dcr': 0.44, 'demand': 2150, 'capacity': 4885},
+                                {'id': 11, 'dcr': 0.76, 'demand': 228, 'capacity': 300},
+                                {'id': 16, 'dcr': 0.36, 'demand': 90, 'capacity': 250},
+                            ]
+                        },
+                        'SLS-Frequent: 1.0DL + 0.75LL': {
+                            'max_dcr': 0.49,
+                            'checks': [
+                                {'id': 13, 'dcr': 0.49, 'demand': 11.8, 'capacity': 24.0},
+                                {'id': 8, 'dcr': 0.53, 'demand': 63, 'capacity': 118},
+                                {'id': 9, 'dcr': 0.40, 'demand': 33, 'capacity': 83},
+                            ]
+                        },
+                    },
+                },
+                'G3': {
+                    'checks': [
+                        {'check_id': 1, 'name': 'Moment', 'dcr': 0.86, 'status': 'PASS',
+                         'demand': 4180, 'capacity': 4885, 'demand_unit': 'kN-m', 'capacity_unit': 'kN-m'},
+                        {'check_id': 2, 'name': 'Shear', 'dcr': 0.60, 'status': 'PASS',
+                         'demand': 560, 'capacity': 935, 'demand_unit': 'kN', 'capacity_unit': 'kN'},
+                        {'check_id': 5, 'name': 'LTB (Construction)', 'dcr': 0.44, 'status': 'PASS',
+                         'demand': 2150, 'capacity': 4885, 'demand_unit': 'kN-m', 'capacity_unit': 'kN-m'},
+                        {'check_id': 8, 'name': 'Fatigue — Normal Stress', 'dcr': 0.53, 'status': 'PASS',
+                         'demand': 63, 'capacity': 118, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 9, 'name': 'Fatigue — Shear Stress', 'dcr': 0.40, 'status': 'PASS',
+                         'demand': 33, 'capacity': 83, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 11, 'name': 'Stress Limitation', 'dcr': 0.76, 'status': 'PASS',
+                         'demand': 228, 'capacity': 300, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 13, 'name': 'Deflection (LL)', 'dcr': 0.49, 'status': 'PASS',
+                         'demand': 11.8, 'capacity': 24.0, 'demand_unit': 'mm', 'capacity_unit': 'mm'},
+                        {'check_id': 16, 'name': 'Transverse Shear', 'dcr': 0.36, 'status': 'PASS',
+                         'demand': 90, 'capacity': 250, 'demand_unit': 'kN', 'capacity_unit': 'kN'},
+                    ],
+                    'per_lc': {
+                        'ULS-01: 1.35DL + 1.50LL': {
+                            'max_dcr': 0.86,
+                            'checks': [
+                                {'id': 1, 'dcr': 0.86, 'demand': 4180, 'capacity': 4885},
+                                {'id': 2, 'dcr': 0.60, 'demand': 560, 'capacity': 935},
+                                {'id': 5, 'dcr': 0.44, 'demand': 2150, 'capacity': 4885},
+                                {'id': 11, 'dcr': 0.76, 'demand': 228, 'capacity': 300},
+                                {'id': 16, 'dcr': 0.36, 'demand': 90, 'capacity': 250},
+                            ]
+                        },
+                        'SLS-Frequent: 1.0DL + 0.75LL': {
+                            'max_dcr': 0.49,
+                            'checks': [
+                                {'id': 13, 'dcr': 0.49, 'demand': 11.8, 'capacity': 24.0},
+                                {'id': 8, 'dcr': 0.53, 'demand': 63, 'capacity': 118},
+                                {'id': 9, 'dcr': 0.40, 'demand': 33, 'capacity': 83},
+                            ]
+                        },
+                    },
+                },
+                'G4': {
+                    'checks': [
+                        {'check_id': 1, 'name': 'Moment', 'dcr': 0.87, 'status': 'PASS',
+                         'demand': 4250, 'capacity': 4885, 'demand_unit': 'kN-m', 'capacity_unit': 'kN-m'},
+                        {'check_id': 2, 'name': 'Shear', 'dcr': 0.62, 'status': 'PASS',
+                         'demand': 580, 'capacity': 935, 'demand_unit': 'kN', 'capacity_unit': 'kN'},
+                        {'check_id': 5, 'name': 'LTB (Construction)', 'dcr': 0.45, 'status': 'PASS',
+                         'demand': 2200, 'capacity': 4885, 'demand_unit': 'kN-m', 'capacity_unit': 'kN-m'},
+                        {'check_id': 8, 'name': 'Fatigue — Normal Stress', 'dcr': 0.55, 'status': 'PASS',
+                         'demand': 65, 'capacity': 118, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 9, 'name': 'Fatigue — Shear Stress', 'dcr': 0.42, 'status': 'PASS',
+                         'demand': 35, 'capacity': 83, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 11, 'name': 'Stress Limitation', 'dcr': 0.78, 'status': 'PASS',
+                         'demand': 234, 'capacity': 300, 'demand_unit': 'MPa', 'capacity_unit': 'MPa'},
+                        {'check_id': 13, 'name': 'Deflection (LL)', 'dcr': 0.52, 'status': 'PASS',
+                         'demand': 12.5, 'capacity': 24.0, 'demand_unit': 'mm', 'capacity_unit': 'mm'},
+                        {'check_id': 16, 'name': 'Transverse Shear', 'dcr': 0.38, 'status': 'PASS',
+                         'demand': 95, 'capacity': 250, 'demand_unit': 'kN', 'capacity_unit': 'kN'},
+                    ],
+                    'per_lc': {
+                        'ULS-01: 1.35DL + 1.50LL': {
+                            'max_dcr': 0.87,
+                            'checks': [
+                                {'id': 1, 'dcr': 0.87, 'demand': 4250, 'capacity': 4885},
+                                {'id': 2, 'dcr': 0.62, 'demand': 580, 'capacity': 935},
+                                {'id': 5, 'dcr': 0.45, 'demand': 2200, 'capacity': 4885},
+                                {'id': 11, 'dcr': 0.78, 'demand': 234, 'capacity': 300},
+                                {'id': 16, 'dcr': 0.38, 'demand': 95, 'capacity': 250},
+                            ]
+                        },
+                        'SLS-Frequent: 1.0DL + 0.75LL': {
+                            'max_dcr': 0.52,
+                            'checks': [
+                                {'id': 13, 'dcr': 0.52, 'demand': 12.5, 'capacity': 24.0},
+                                {'id': 8, 'dcr': 0.55, 'demand': 65, 'capacity': 118},
+                                {'id': 9, 'dcr': 0.42, 'demand': 35, 'capacity': 83},
+                            ]
+                        },
+                    },
+                },
             },
         },
 
@@ -783,7 +970,7 @@ def build_mock_payload():
         'steeldesign.details.classification.web_class_limit': '105.0',
         'steeldesign.details.moment.md_capacity': '4885',
         'steeldesign.details.moment.mu_applied': '4250',
-        'steeldesign.details.shear_check.vu_applied': '780',
+        'steeldesign.details.shear_check.vu_applied': '580',
         'steeldesign.details.shear_check.av_area': '13800',
         'steeldesign.details.shear_check.kv': '5.35',
         'steeldesign.details.shear_check.lambda_w': '0.91',
@@ -793,7 +980,7 @@ def build_mock_payload():
         'steeldesign.details.ltb.lambda_lt': '0.866',
         'steeldesign.details.ltb.chi_lt': '0.712',
         'steeldesign.details.ltb.mb': '3480',
-        'steeldesign.details.interaction.high_shear': 'No (V < 0.6 Vd)',
+        'steeldesign.details.interaction.high_shear': 'No ($V < 0.6\,V_d$)',
         'steeldesign.details.interaction.mdv': '4885',
         'steeldesign.details.interaction.mn_axial': 0.0,
         'steeldesign.details.interaction.mn_moment': 0.87,
@@ -804,11 +991,11 @@ def build_mock_payload():
         'steeldesign.details.stiffener_summary.int_spacing': '1500 mm',
         'steeldesign.details.stiffener_summary.int_thickness': '12 mm',
         'steeldesign.details.stiffener_summary.longitudinal': 'Not required',
-        'steeldesign.details.bearing_stiffener.reaction': '780',
-        'steeldesign.details.bearing_stiffener.fcd': '227',
-        'steeldesign.details.bearing_stiffener.fcdw_lc': '195',
-        'steeldesign.details.bearing_stiffener.fcdw_wb': '210',
-        'steeldesign.details.bearing_stiffener.fpsd': '320',
+        'steeldesign.details.bearing_stiffener.reaction': '580',
+        'steeldesign.details.bearing_stiffener.fcd': '1850',
+        'steeldesign.details.bearing_stiffener.fcdw_lc': '920',
+        'steeldesign.details.bearing_stiffener.fcdw_wb': '850',
+        'steeldesign.details.bearing_stiffener.fpsd': '1250',
         'steeldesign.details.int_stiffener.fq': '115',
         'steeldesign.details.int_stiffener.fqd': '165',
         'steeldesign.details.int_stiffener.iys_min': '120',
@@ -825,9 +1012,9 @@ def build_mock_payload():
         'steeldesign.transverse_shear.vrd_kN_per_m': '450',
         'steeldesign.shear_connector.qu_kN': '58.2',
         'steeldesign.shear_connector.qr_kN': '46.6',
-        'steeldesign.shear_connector.sl1_mm': '150',
+        'steeldesign.shear_connector.sl1_mm': '180',
         'steeldesign.shear_connector.sl2_mm': '300',
-        'steeldesign.shear_connector.sr_mm': '120',
+        'steeldesign.shear_connector.sr_mm': '180',
         'steeldesign.shear_connector.edge_distance_mm': '30',
         'steeldesign.shear_connector.req_edge_distance_mm': '25',
         'steeldesign.shear_connector.d_limit_mm': '22',

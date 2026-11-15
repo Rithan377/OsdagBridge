@@ -12,17 +12,17 @@ This section records all project metadata as entered by the designer.
 
 \begin{tabular}{|L{5.5cm}|L{8.5cm}|}
 \hline
-\textbf{Project Name} & """ + _tex(m.project_name) + r""" \\
+\textbf{Project Name} & """ + _tex(m.project_name or "Not provided") + r""" \\
 \hline
-\textbf{Project Location} & """ + _tex(m.project_location) + r""" \\
+\textbf{Project Location} & """ + _tex(m.project_location or "Not provided") + r""" \\
 \hline
-\textbf{Designer} & """ + _tex(m.designer) + r""" \\
+\textbf{Designer} & """ + _tex(m.designer or "Not provided") + r""" \\
 \hline
-\textbf{Reviewer} & """ + _tex(m.reviewer) + r""" \\
+\textbf{Reviewer} & """ + _tex(m.reviewer or "Not provided") + r""" \\
 \hline
-\textbf{Organization} & """ + _tex(m.company) + r""" \\
+\textbf{Organization} & """ + _tex(m.company or "Not provided") + r""" \\
 \hline
-\textbf{Client} & """ + _tex(m.client) + r""" \\
+\textbf{Client} & """ + _tex(m.client or "Not provided") + r""" \\
 \hline
 \textbf{Software Version} & OsdagBridge \\
 \hline

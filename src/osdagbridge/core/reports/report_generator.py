@@ -318,7 +318,7 @@ def title_page(m, osdag_logo, org_logo):
 
     return r"""
 \begin{titlepage}
-\thispagestyle{firstpage}
+\thispagestyle{empty}
 \centering
 \vspace*{1.5cm}
 """ + logos_tex + r"""
@@ -327,23 +327,23 @@ def title_page(m, osdag_logo, org_logo):
 {\Large Design Report}\\[1.5cm]
 \begin{tabular}{|L{4cm}|L{10cm}|}
 \hline
-\textbf{Project Name} & """ + _tex(m.project_name) + r""" \\
+\textbf{Project Name} & """ + _tex(m.project_name or "Not provided") + r""" \\
 \hline
-\textbf{Project Location} & """ + _tex(m.project_location) + r""" \\
+\textbf{Project Location} & """ + _tex(m.project_location or "Not provided") + r""" \\
 \hline
-\textbf{Author / Designer} & """ + _tex(m.designer) + r""" \\
+\textbf{Author / Designer} & """ + _tex(m.designer or "Not provided") + r""" \\
 \hline
-\textbf{Reviewer} & """ + _tex(m.reviewer) + r""" \\
+\textbf{Reviewer} & """ + _tex(m.reviewer or "Not provided") + r""" \\
 \hline
-\textbf{Organization} & """ + _tex(m.company) + r""" \\
+\textbf{Organization} & """ + _tex(m.company or "Not provided") + r""" \\
 \hline
-\textbf{Client Name and Organization} & """ + _tex(m.client) + r""" \\
+\textbf{Client Name and Organization} & """ + _tex(m.client or "Not provided") + r""" \\
 \hline
-\textbf{Job Number} & """ + _tex(m.job_number) + r""" \\
+\textbf{Job Number} & """ + _tex(m.job_number or "Not provided") + r""" \\
 \hline
-\textbf{Date} & """ + _tex(m.report_date) + r""" \\
+\textbf{Date} & """ + _tex(m.report_date or "Not provided") + r""" \\
 \hline
-\textbf{Report Version} & """ + (_tex(m.subtitle) if m.subtitle else '') + r""" \\
+\textbf{Report Version} & """ + (_tex(m.subtitle) if m.subtitle else 'Rev 0') + r""" \\
 \hline
 \end{tabular}
 \end{titlepage}

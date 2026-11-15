@@ -14,7 +14,7 @@ def references():
 
 \item IRC 24 (2010) --- \textit{Standard Specifications and Code of Practice for Road Bridges, Section V: Steel Road Bridges (Limit State Method).}
 
-\item IRC 112 (2011) --- \textit{Code of Practice for Concrete Road Bridges.}
+\item IRC 112 (2020) --- \textit{Code of Practice for Concrete Road Bridges.}
 
 \item IRC SP 114 (2018) --- \textit{Guidelines for Seismic Design of Road Bridges.}
 

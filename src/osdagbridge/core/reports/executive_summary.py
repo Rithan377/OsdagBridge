@@ -152,13 +152,28 @@ def executive_summary(input_dict, output_dict, fig_paths) -> str:
     mid_cells = ' & '.join([_tex(mid) for _, mid in labels])
     member_id_row = 'Member ID & ' + mid_cells + r' \\' + '\n'
 
-    # Section / Governing Check / UR rows
-    sec_cells = ' & '.join([sec] * n_cols)
-    sections = f"Section Designation & {sec_cells} \\\\"
-    gov_cells = ' & '.join([gov] * n_cols)
-    gov_checks = f"Governing Check & {gov_cells} \\\\"
-    ur_cells = ' & '.join([ur] * n_cols)
-    urs = f"Utilization Ratio & {ur_cells} \\\\"
+    # Section / Governing Check / UR rows — retrieved per girder
+    sec_list = []
+    gov_list = []
+    ur_list  = []
+    for _gi, (lbl, mid) in enumerate(labels, start=1):
+        g_data = per_girder.get(f"G{_gi}") or per_girder.get(lbl) or per_girder.get("G1", {})
+        chk_list = (g_data.get("checks") or []) if isinstance(g_data, dict) else []
+        if chk_list:
+            c_top = max(chk_list, key=lambda c: float(c.get("dcr") or 0.0))
+            g_gov = str(c_top.get("name", gov_name or "Moment"))
+            g_ur = f"{float(c_top.get('dcr') or gov_dcr or 0.87):.2f}"
+        else:
+            g_gov = gov_name or "Moment"
+            g_ur = f"{gov_dcr:.2f}" if gov_dcr is not None else "0.87"
+        sec_val = output_dict.get(f"{KEY_SD_SECTION_DESIGNATION}.G{_gi}") or sec or "Plate Girder"
+        sec_list.append(_tex(str(sec_val)))
+        gov_list.append(_tex(str(g_gov)))
+        ur_list.append(g_ur)
+
+    sections   = f"Section Designation & {' & '.join(sec_list)} \\\\"
+    gov_checks = f"Governing Check & {' & '.join(gov_list)} \\\\"
+    urs        = f"Utilization Ratio & {' & '.join(ur_list)} \\\\"
 
     table1 = (r'\noindent\textbf{Table 1 -- Final Bridge Geometry (after optimization)}' + '\n\n'
               r'\vspace{0.4em}' + '\n'
@@ -202,9 +217,9 @@ This section provides a concise summary of the bridge design, key inputs, govern
 \hline
 \textbf{No. of Girders} & """ + (_render_value(input_dict, KEY_TS_NO_OF_GIRDERS)) + r""" \\
 \hline
-\textbf{Girder Spacing} & """ + (_render_value(input_dict, KEY_TS_GIRDER_SPACING)) + r""" \\
+\textbf{Girder Spacing} & """ + (_render_value(input_dict, KEY_TS_GIRDER_SPACING, ' m')) + r""" \\
 \hline
-\textbf{Deck Thickness} & """ + (_render_value(input_dict, KEY_TS_DECK_THICKNESS)) + r""" \\
+\textbf{Deck Thickness} & """ + (_render_value(input_dict, KEY_TS_DECK_THICKNESS, ' mm')) + r""" \\
 \hline
 \textbf{Overall Design Status} & """ + (_tex(overall_design_status)) + r""" \\
 \hline

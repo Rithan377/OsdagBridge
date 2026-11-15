@@ -1,27 +1,35 @@
 def _boq_chart_block(steel_path, concrete_path):
     """Return LaTeX fragment embedding the BOQ charts, or empty string."""
     parts = []
+    if steel_path or concrete_path:
+        parts.append(r'\clearpage' + '\n' + r'\section{Material Quantity Visualizations}' + '\n')
     if steel_path:
         p = steel_path.replace('\\', '/')
         parts.append(
-            r'\vspace{1em}' + '\n'
             r'\begin{figure}[H]' + '\n'
             r'\centering' + '\n'
-            r'\includegraphics[width=0.88\textwidth]{' + p + '}\n'
+            r'\includegraphics[width=0.85\textwidth,height=7.2cm,keepaspectratio]{' + p + '}\n'
             r'\caption*{\small Figure 7.1: Structural Steel Quantity by Component (MT)}' + '\n'
             r'\end{figure}'
         )
     if concrete_path:
         p = concrete_path.replace('\\', '/')
         parts.append(
-            r'\vspace{1em}' + '\n'
+            r'\vspace{0.5em}' + '\n'
             r'\begin{figure}[H]' + '\n'
             r'\centering' + '\n'
-            r'\includegraphics[width=0.70\textwidth]{' + p + '}\n'
+            r'\includegraphics[width=0.85\textwidth,height=7.2cm,keepaspectratio]{' + p + '}\n'
             r'\caption*{\small Figure 7.2: Concrete \& Reinforcement Quantities}' + '\n'
             r'\end{figure}'
         )
     return '\n'.join(parts)
+
+
+def _qval(val):
+    if val is None or val == "":
+        return "N.A."
+    s = str(val).replace('³', '$^3$').replace('²', '$^2$')
+    return s.replace('%', r'\%')
 
 
 def ch7_quantities(input_dict, steel_chart_path=None, concrete_chart_path=None):
@@ -42,27 +50,27 @@ def ch7_quantities(input_dict, steel_chart_path=None, concrete_chart_path=None):
 \textbf{S.N.} & \textbf{Item Description} & \textbf{Volume} & \textbf{Quantity} & \textbf{Total Volume} & \textbf{Weight (MT)} & \textbf{Total Weight (MT)} \\
 \hline
 \endhead
-1 & Structural Steel (IS 2062) for Girders & """ + str(input_dict.get("steel_girders_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("steel_girders_qty", "N.A.")) + r""" & """ + str(input_dict.get("steel_girders_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("steel_girders_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("steel_girders_wt_total", "N.A.")) + r""" \\
+1 & Structural Steel (IS 2062) for Girders & """ + _qval(input_dict.get("steel_girders_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("steel_girders_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("steel_girders_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("steel_girders_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("steel_girders_wt_total", "N.A.")) + r""" \\
 \hline
-2(a) & Cross Bracing - Top Chord & """ + str(input_dict.get("bracing_top_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("bracing_top_qty", "N.A.")) + r""" & """ + str(input_dict.get("bracing_top_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("bracing_top_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("bracing_top_wt_total", "N.A.")) + r""" \\
+2(a) & Cross Bracing - Top Chord & """ + _qval(input_dict.get("bracing_top_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_top_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_top_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_top_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_top_wt_total", "N.A.")) + r""" \\
 \hline
-2(b) & Cross Bracing - Bottom Chord & """ + str(input_dict.get("bracing_bot_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("bracing_bot_qty", "N.A.")) + r""" & """ + str(input_dict.get("bracing_bot_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("bracing_bot_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("bracing_bot_wt_total", "N.A.")) + r""" \\
+2(b) & Cross Bracing - Bottom Chord & """ + _qval(input_dict.get("bracing_bot_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_bot_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_bot_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_bot_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_bot_wt_total", "N.A.")) + r""" \\
 \hline
-2(c) & Cross Bracing - Diagonal Chord & """ + str(input_dict.get("bracing_diag_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("bracing_diag_qty", "N.A.")) + r""" & """ + str(input_dict.get("bracing_diag_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("bracing_diag_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("bracing_diag_wt_total", "N.A.")) + r""" \\
+2(c) & Cross Bracing - Diagonal Chord & """ + _qval(input_dict.get("bracing_diag_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_diag_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_diag_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_diag_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("bracing_diag_wt_total", "N.A.")) + r""" \\
 \hline
-2(d) & End Diaphragm - Top Chord & """ + str(input_dict.get("ed_top_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("ed_top_qty", "N.A.")) + r""" & """ + str(input_dict.get("ed_top_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("ed_top_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("ed_top_wt_total", "N.A.")) + r""" \\
+2(d) & End Diaphragm - Top Chord & """ + _qval(input_dict.get("ed_top_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_top_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_top_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_top_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_top_wt_total", "N.A.")) + r""" \\
 \hline
-2(e) & End Diaphragm - Bottom Chord & """ + str(input_dict.get("ed_bot_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("ed_bot_qty", "N.A.")) + r""" & """ + str(input_dict.get("ed_bot_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("ed_bot_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("ed_bot_wt_total", "N.A.")) + r""" \\
+2(e) & End Diaphragm - Bottom Chord & """ + _qval(input_dict.get("ed_bot_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_bot_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_bot_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_bot_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_bot_wt_total", "N.A.")) + r""" \\
 \hline
-2(f) & End Diaphragm - Diagonal Chord & """ + str(input_dict.get("ed_diag_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("ed_diag_qty", "N.A.")) + r""" & """ + str(input_dict.get("ed_diag_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("ed_diag_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("ed_diag_wt_total", "N.A.")) + r""" \\
+2(f) & End Diaphragm - Diagonal Chord & """ + _qval(input_dict.get("ed_diag_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_diag_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_diag_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_diag_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("ed_diag_wt_total", "N.A.")) + r""" \\
 \hline
-3 & Concrete (M40) for Deck Slab & """ + str(input_dict.get("concrete_deck_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("concrete_deck_qty", "N.A.")) + r""" & """ + str(input_dict.get("concrete_deck_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("concrete_deck_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("concrete_deck_wt_total", "N.A.")) + r""" \\
+3 & Concrete (M40) for Deck Slab & """ + _qval(input_dict.get("concrete_deck_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("concrete_deck_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("concrete_deck_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("concrete_deck_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("concrete_deck_wt_total", "N.A.")) + r""" \\
 \hline
-4 & Reinforcement Steel (Fe 500) & """ + str(input_dict.get("rebar_deck_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("rebar_deck_qty", "N.A.")) + r""" & """ + str(input_dict.get("rebar_deck_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("rebar_deck_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("rebar_deck_wt_total", "N.A.")) + r""" \\
+4 & Reinforcement Steel (Fe 500) & """ + _qval(input_dict.get("rebar_deck_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("rebar_deck_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("rebar_deck_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("rebar_deck_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("rebar_deck_wt_total", "N.A.")) + r""" \\
 \hline
-5 & Shear Stud Connectors & """ + str(input_dict.get("shear_studs_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("shear_studs_qty", "N.A.")) + r""" & """ + str(input_dict.get("shear_studs_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("shear_studs_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("shear_studs_wt_total", "N.A.")) + r""" \\
+5 & Shear Stud Connectors & """ + _qval(input_dict.get("shear_studs_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("shear_studs_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("shear_studs_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("shear_studs_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("shear_studs_wt_total", "N.A.")) + r""" \\
 \hline
-6 & Crash Barrier & """ + str(input_dict.get("crash_barrier_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("crash_barrier_qty", "N.A.")) + r""" & """ + str(input_dict.get("crash_barrier_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("crash_barrier_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("crash_barrier_wt_total", "N.A.")) + r""" \\
+6 & Crash Barrier & """ + _qval(input_dict.get("crash_barrier_vol_formula", "N.A.")) + r""" & """ + _qval(input_dict.get("crash_barrier_qty", "N.A.")) + r""" & """ + _qval(input_dict.get("crash_barrier_vol_total", "N.A.")) + r""" & """ + _qval(input_dict.get("crash_barrier_wt_single", "N.A.")) + r""" & """ + _qval(input_dict.get("crash_barrier_wt_total", "N.A.")) + r""" \\
 \hline
 \end{longtable}
 """ + _boq_chart_block(steel_chart_path, concrete_chart_path) + r"""
