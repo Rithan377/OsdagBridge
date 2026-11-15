@@ -156,7 +156,7 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
 \documentclass[12pt,a4paper]{report}
 
 % Packages
-\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[a4paper, top=25mm, bottom=28mm, left=20mm, right=20mm, headheight=16pt, headsep=14pt, footskip=18pt]{geometry}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -217,11 +217,11 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
   \renewcommand{\headrule}{\color{osdagGreen}\hrule width\headwidth height 1pt \vspace{2pt}}
   \renewcommand{\footrule}{%
     \ifbool{hasSDonPage}{%
-      \vspace{-20pt}%
+      \vspace{2pt}%
       \hbox to \headwidth{\textcolor{black}{\footnotesize\textit{* Software default value}}\hfil}%
       \vspace{4pt}%
     }{%
-      \vspace{-8pt}%
+      \vspace{0pt}%
     }%
     \color{osdagGreen}\hrule width\headwidth height 1pt \vspace{6pt}%
   }
@@ -235,11 +235,11 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
   \renewcommand{\headrule}{\color{osdagGreen}\hrule width\headwidth height 1pt \vspace{2pt}}
   \renewcommand{\footrule}{%
     \ifbool{hasSDonPage}{%
-      \vspace{-20pt}%
+      \vspace{2pt}%
       \hbox to \headwidth{\textcolor{black}{\footnotesize\textit{* Software default value}}\hfil}%
       \vspace{4pt}%
     }{%
-      \vspace{-8pt}%
+      \vspace{0pt}%
     }%
     \color{osdagGreen}\hrule width\headwidth height 1pt \vspace{6pt}%
   }
@@ -249,7 +249,7 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
   \renewcommand{\headrulewidth}{0pt}
   \fancyfoot[L]{Osdag $|$ FOSSEE $|$ Indian Institute of Technology Bombay}
   \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
-  \renewcommand{\footrule}{\vspace{-8pt}\color{osdagGreen}\hrule width\headwidth height 1pt \vspace{6pt}}
+  \renewcommand{\footrule}{\vspace{0pt}\color{osdagGreen}\hrule width\headwidth height 1pt \vspace{6pt}}
 }
 \pagestyle{main}
 \setstretch{1.15}
@@ -806,6 +806,11 @@ def build_report_payload(request, input_dict, output_dict):
 
 
 from osdagbridge.core.boq.boq_generator import calculate_material_quantities
+from osdagbridge.core.reports.report_charts import (
+    generate_ur_summary_chart,
+    generate_boq_steel_chart,
+    generate_boq_concrete_chart,
+)
 
 # ===========================================================================
 # Public entry point
@@ -897,7 +902,18 @@ def generate_report(payload, request):
 
             # Compute and inject quantities for Chapter 7
             quantities = calculate_material_quantities(payload.inputs, payload.output_dict)
-            payload.inputs.update(quantities)
+            # Only update keys that have real values (preserve existing data)
+            for k, v in quantities.items():
+                if v not in (None, "", "N.A.") or k not in payload.inputs:
+                    payload.inputs[k] = v
+
+            # ── Generate charts for Chapters 5 and 7 ──
+            ur_chart_path = generate_ur_summary_chart(
+                payload.output_dict, payload.inputs, tmp_images)
+            boq_steel_chart_path = generate_boq_steel_chart(
+                payload.inputs, tmp_images)
+            boq_concrete_chart_path = generate_boq_concrete_chart(
+                payload.inputs, tmp_images)
 
             # ── Assemble LaTeX document (fig_paths now has tmp_dir paths) ──
             bridge = ReportDataBridge(payload.output_dict, payload.inputs, payload)
@@ -924,11 +940,11 @@ def generate_report(payload, request):
             if 'analysis' in secs:
                 doc_parts.append(ch4_analysis(payload.analysis_summary, fig_paths, bridge, span_m))
             if 'design_checks' in secs:
-                doc_parts.append(ch5_design_checks(payload.design_checks, bridge))
+                doc_parts.append(ch5_design_checks(payload.design_checks, bridge, ur_chart_path=ur_chart_path))
             if 'drawings' in secs and payload.options.include_figures:
                 doc_parts.append(ch6_drawings(fig_paths))
 
-            doc_parts.append(ch7_quantities(payload.inputs))
+            doc_parts.append(ch7_quantities(payload.inputs, steel_chart_path=boq_steel_chart_path, concrete_chart_path=boq_concrete_chart_path))
 
             mode = str(payload.inputs.get(KEY_DESIGN_MODE, "Optimized")).strip().lower()
             is_custom = mode in {"custom", "customized"}

@@ -1,4 +1,30 @@
-def ch7_quantities(input_dict):
+def _boq_chart_block(steel_path, concrete_path):
+    """Return LaTeX fragment embedding the BOQ charts, or empty string."""
+    parts = []
+    if steel_path:
+        p = steel_path.replace('\\', '/')
+        parts.append(
+            r'\vspace{1em}' + '\n'
+            r'\begin{figure}[H]' + '\n'
+            r'\centering' + '\n'
+            r'\includegraphics[width=0.88\textwidth]{' + p + '}\n'
+            r'\caption*{\small Figure 7.1: Structural Steel Quantity by Component (MT)}' + '\n'
+            r'\end{figure}'
+        )
+    if concrete_path:
+        p = concrete_path.replace('\\', '/')
+        parts.append(
+            r'\vspace{1em}' + '\n'
+            r'\begin{figure}[H]' + '\n'
+            r'\centering' + '\n'
+            r'\includegraphics[width=0.70\textwidth]{' + p + '}\n'
+            r'\caption*{\small Figure 7.2: Concrete \& Reinforcement Quantities}' + '\n'
+            r'\end{figure}'
+        )
+    return '\n'.join(parts)
+
+
+def ch7_quantities(input_dict, steel_chart_path=None, concrete_chart_path=None):
     return r"""
 \chapter{Material Take-off \& Quantity Summary}
 \label{ch:material-takeoff}
@@ -11,6 +37,11 @@ def ch7_quantities(input_dict):
 \hline
 \textbf{S.N.} & \textbf{Item Description} & \textbf{Volume} & \textbf{Quantity} & \textbf{Total Volume} & \textbf{Weight (MT)} & \textbf{Total Weight (MT)} \\
 \hline
+\endfirsthead
+\hline
+\textbf{S.N.} & \textbf{Item Description} & \textbf{Volume} & \textbf{Quantity} & \textbf{Total Volume} & \textbf{Weight (MT)} & \textbf{Total Weight (MT)} \\
+\hline
+\endhead
 1 & Structural Steel (IS 2062) for Girders & """ + str(input_dict.get("steel_girders_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("steel_girders_qty", "N.A.")) + r""" & """ + str(input_dict.get("steel_girders_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("steel_girders_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("steel_girders_wt_total", "N.A.")) + r""" \\
 \hline
 2(a) & Cross Bracing - Top Chord & """ + str(input_dict.get("bracing_top_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("bracing_top_qty", "N.A.")) + r""" & """ + str(input_dict.get("bracing_top_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("bracing_top_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("bracing_top_wt_total", "N.A.")) + r""" \\
@@ -28,6 +59,5 @@ def ch7_quantities(input_dict):
 6 & Crash Barrier & """ + str(input_dict.get("crash_barrier_vol_formula", "N.A.")) + r""" & """ + str(input_dict.get("crash_barrier_qty", "N.A.")) + r""" & """ + str(input_dict.get("crash_barrier_vol_total", "N.A.")) + r""" & """ + str(input_dict.get("crash_barrier_wt_single", "N.A.")) + r""" & """ + str(input_dict.get("crash_barrier_wt_total", "N.A.")) + r""" \\
 \hline
 \end{longtable}
+""" + _boq_chart_block(steel_chart_path, concrete_chart_path) + r"""
 """
-
-

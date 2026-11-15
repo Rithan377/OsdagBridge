@@ -83,6 +83,46 @@ def ch3_loads(input_dict):
             elif isinstance(c, str):
                 vehicles.append(c)
                 
+    # --- Build per-vehicle rows for Table 3.3(a) ---
+    vehicle_rows = []
+    vehicle_list = []
+    if input_dict.get(KEY_LL_IRC_CLASS_A):
+        vehicle_list.append(("Class A", "Class A"))
+    if input_dict.get(KEY_LL_IRC_70R_WHEELED):
+        vehicle_list.append(("Class 70R (Wheeled)", "AA/70R"))
+    if input_dict.get(KEY_LL_IRC_70R_TRACKED):
+        vehicle_list.append(("Class 70R (Tracked)", "AA/70R"))
+    if input_dict.get(KEY_LL_IRC_AA_WHEELED):
+        vehicle_list.append(("Class AA (Wheeled)", "AA/70R"))
+    if input_dict.get(KEY_LL_IRC_AA_TRACKED):
+        vehicle_list.append(("Class AA (Tracked)", "AA/70R"))
+    if input_dict.get(KEY_LL_IRC_CLASS_SV):
+        vehicle_list.append(("Class SV", "SV"))
+    if input_dict.get(KEY_LL_IRC_70R_BOGIE):
+        vehicle_list.append(("Class 70R (Bogie)", "AA/70R"))
+    if input_dict.get(KEY_LL_IRC_CLASS_FATIGUE):
+        vehicle_list.append(("Class Fatigue", "Fatigue"))
+
+    # Build per-vehicle impact factor
+    for vname, vcat in vehicle_list:
+        if vcat == "Class A":
+            im_str = f"{1.0 + im_a:.3f}" if 'im_a' in dir() else "N/A"
+            try:
+                im_str = f"{1.0 + IRC6_2017.cl_208_2_impact_factor(span_m):.3f}"
+            except Exception:
+                im_str = "N/A"
+        elif vcat == "AA/70R":
+            try:
+                im_str = f"{1.0 + IRC6_2017.cl_208_3_impact_factor(span_m):.3f}"
+            except Exception:
+                im_str = "N/A"
+        else:
+            im_str = "N/A"
+        vehicle_rows.append(
+            r"\textnormal{" + _tex(vname) + r"} & " + _tex(im_str) + r" & " + _tex(braking_force_str) + r" \\[6pt]" + "\n\\hline"
+        )
+    vehicle_rows_str = "\n".join(vehicle_rows) if vehicle_rows else r"\textnormal{None selected} & N/A & N/A \\[6pt]" + "\n\\hline"
+
     vehicles_str = ", ".join(vehicles) if vehicles else "None"
 
     from osdagbridge.core.utils.codes.irc6_2017 import IRC6_2017
@@ -277,6 +317,11 @@ This section summarizes all loads applied to the bridge and the load combination
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
+\endfirsthead
+\hline
+\textbf{parameter} & \textbf{value} \\
+\hline
+\endhead
 \textnormal{Steel Self-Weight Applied} & """ + (_render_value(input_dict, KEY_MATERIAL_GIRDER_DENSITY, ' kN/m\\textsuperscript{3}')) + r""" \\[6pt]
 \hline
 \textnormal{Concrete Deck Weight} & """ + (_render_value(input_dict, KEY_MATERIAL_DECK_DENSITY, ' kN/m\\textsuperscript{3}')) + r""" \\[6pt]
@@ -291,6 +336,11 @@ This section summarizes all loads applied to the bridge and the load combination
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
+\endfirsthead
+\hline
+\textbf{parameter} & \textbf{value} \\
+\hline
+\endhead
 \textnormal{Wearing Course Load} & """ + (_render_value(input_dict, KEY_WC_MATERIAL)) + r""" x """ + (_render_value(input_dict, KEY_WC_THICKNESS)) + r""" \\[6pt]
 \hline
 \textnormal{Additional SIDL (Crash Barrier)} & """ + (_render_value(input_dict, KEY_CB_LOAD)) + r""" kN/m per barrier \\[6pt]
@@ -300,18 +350,35 @@ This section summarizes all loads applied to the bridge and the load combination
 \end{longtable}
 
 \vspace{1em}
+\begin{longtable}{|L{4.5cm}|C{3.0cm}|C{4.0cm}|}
+\caption{\textbf{Vehicle Live Loads (LL) --- Table 3.3(a)}}
+\hline
+\textbf{Vehicle Class} & \textbf{Impact Factor} & \textbf{Braking Force} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Vehicle Class} & \textbf{Impact Factor} & \textbf{Braking Force} \\
+\hline
+\endhead
+""" + vehicle_rows_str + r"""
+\end{longtable}
+
+\vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Live Loads (LL)}}
+\caption{\textbf{Footway Live Load --- Table 3.3(b)}}
 \hline
-\textbf{parameter} & \textbf{value} \\
+\textbf{Parameter} & \textbf{Value} \\
 \hline
-\textnormal{Vehicles Considered} & """ + _tex(vehicles_str) + r""" \\[6pt]
+\endfirsthead
 \hline
-\textnormal{Impact Factor (IRC 6)} & """ + _tex(impact_factor_str) + r""" \\[6pt]
+\textbf{Parameter} & \textbf{Value} \\
 \hline
-\textnormal{Braking Load (IRC 6)} & """ + _tex(braking_force_str) + r""" \\[6pt]
+\endhead
+\textnormal{Footpath Live Load Pressure} & """ + _tex(fp_str) + r""" \\[6pt]
 \hline
-\textnormal{Footpath Live Load (if applicable)} & """ + (_render_value(input_dict, KEY_LL_FOOTPATH_PRESSURE_VALUE, ' kN/m\\textsuperscript{2}')) + r""" \\[6pt]
+\textnormal{Load Mode} & """ + _tex(str(fp_mode) if fp_mode else 'N/A') + r""" \\[6pt]
+\hline
+\textnormal{Applicable Clause} & IRC 6 Cl. 206.1 \\[6pt]
 \hline
 \end{longtable}
 
@@ -321,6 +388,11 @@ This section summarizes all loads applied to the bridge and the load combination
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
+\endfirsthead
+\hline
+\textbf{parameter} & \textbf{value} \\
+\hline
+\endhead
 \textnormal{Basic Wind Speed, Vb} & """ + (_render_value(input_dict,'wind_speed', ' m/s')) + r""" [from Project Location] \\[6pt]
 \hline
 \textnormal{Terrain Type} & """ + (_render_value(input_dict, KEY_WL_TERRAIN_TYPE)) + r""" \\[6pt]
@@ -345,6 +417,11 @@ This section summarizes all loads applied to the bridge and the load combination
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
+\endfirsthead
+\hline
+\textbf{parameter} & \textbf{value} \\
+\hline
+\endhead
 \textnormal{Seismic Zone} & """ + (_render_value(input_dict,'seismic_zone')) + r""" [from Project Location] \\[6pt]
 \hline
 \textnormal{Zone Factor, Z} & """ + (_render_value(input_dict, KEY_SL_ZONE_FACTOR)) + r""" \\[6pt]
@@ -371,6 +448,11 @@ This section summarizes all loads applied to the bridge and the load combination
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
+\endfirsthead
+\hline
+\textbf{parameter} & \textbf{value} \\
+\hline
+\endhead
 \textnormal{Maximum Shade Temperature} & """ + (_render_value(input_dict,'shade_temp_max')) + r""" $^\circ$C \\[6pt]
 \hline
 \textnormal{Minimum Shade Temperature} & """ + (_render_value(input_dict,'shade_temp_min')) + r""" $^\circ$C \\[6pt]
@@ -387,6 +469,11 @@ This section summarizes all loads applied to the bridge and the load combination
 \hline
 \textbf{Combination ID} & \textbf{Load Cases} \\[6pt]
 \hline
+\endfirsthead
+\hline
+\textbf{Combination ID} & \textbf{Load Cases} \\[6pt]
+\hline
+\endhead
 """ + lc_rows_str + r"""
 \end{longtable}
 
