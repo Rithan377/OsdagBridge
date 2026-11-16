@@ -171,6 +171,16 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{newunicodechar}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{°}{\ensuremath{^\circ}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{×}{\ensuremath{\times}}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tabularx}
@@ -1004,6 +1014,10 @@ def generate_report(payload, request):
 
             if os.path.exists(tmp_tex):
                 shutil.copy2(tmp_tex, tex_path)
+            tmp_log = os.path.join(tmp_dir, request.file_stem + '.log')
+            log_path = os.path.join(request.output_dir, request.file_stem + '.log')
+            if os.path.exists(tmp_log):
+                shutil.copy2(tmp_log, log_path)
             if os.path.exists(tmp_pdf):
                 shutil.copy2(tmp_pdf, pdf_path)
 

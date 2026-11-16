@@ -190,24 +190,20 @@ def ch3_loads(input_dict):
         has_fp = False
 
     if not has_fp:
-        fp_str = "N/A (No footpath provided)"
-        fp_mode = "N/A"
-        fp_clause = "IRC 6 Cl. 206.1 (Not applicable)"
-        fp_unit = "---"
+        fp_rows = (
+            r"\textnormal{Footpath Provision} & None (No footpath provided) \\[6pt]" + "\n\\hline\n"
+            + r"\textnormal{Footway Live Load Pressure} & 0.0 kN/m$^2$ (Not applicable) \\[6pt]" + "\n\\hline\n"
+            + r"\textnormal{Load Determination Mode} & Not applicable \\[6pt]" + "\n\\hline\n"
+            + r"\textnormal{Applicable Standard} & IRC 6:2017 Cl. 206.1 (Not applicable) \\[6pt]" + "\n\\hline"
+        )
     else:
-        fp_mode  = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_MODE, "")
-        fp_value = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_VALUE, "")
-        if str(fp_mode).strip().lower() in ("as per irc 6", "as per irc6", "automatic"):
-            try:
-                fp_str = f"{IRC6_2017.cl_206_1_footway_load():.3f}"
-            except Exception:
-                fp_str = "4.905"
-        elif fp_value not in (None, ""):
-            fp_str = f"{float(fp_value):.3f}"
-        else:
-            fp_str = "4.905"
-        fp_clause = "IRC 6 Cl. 206.1"
-        fp_unit = r"kN/m$^2$"
+        fp_w = _render_value(input_dict, KEY_TS_FOOTPATH_WIDTH, ' m') or "1.5 m"
+        fp_rows = (
+            r"\textnormal{Footpath Provision} & Provided (" + fp_w + r") \\[6pt]" + "\n\\hline\n"
+            + r"\textnormal{Footpath Live Load Pressure} & " + _tex(fp_str) + r" kN/m$^2$ \\[6pt]" + "\n\\hline\n"
+            + r"\textnormal{Load Determination Mode} & " + _tex(str(fp_mode) if fp_mode else 'As per IRC 6') + r" \\[6pt]" + "\n\\hline\n"
+            + r"\textnormal{Applicable Standard} & IRC 6:2017 Cl. 206.1 \\[6pt]" + "\n\\hline"
+        )
 
     # Wearing course load calculation
     wc_mat = input_dict.get(KEY_WC_MATERIAL) or "Concrete"
@@ -371,7 +367,7 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Dead Load -- Self Weight}}
+\caption{\textbf{Dead Load -- Self Weight}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -390,7 +386,7 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Dead Load for Surfacing (DW)}}
+\caption{\textbf{Dead Load for Surfacing (DW)}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -409,7 +405,7 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \vspace{1em}
 \begin{longtable}{|L{3.8cm}|C{2.2cm}|C{3.5cm}|C{3.5cm}|}
-\caption{\textbf{Vehicle Live Loads (LL) --- Table 3.3(a)}}
+\caption{\textbf{Vehicle Live Loads (LL)}}\\
 \hline
 \textbf{Vehicle Class} & \textbf{Impact Factor (IF)} & \textbf{Braking Force (kN)} & \textbf{Centrifugal Force (kN)} \\
 \hline
@@ -422,27 +418,22 @@ This section summarizes all loads applied to the bridge and the load combination
 \end{longtable}
 
 \vspace{1em}
-\begin{longtable}{|L{5.0cm}|p{7.0cm}|C{3.0cm}|}
-\caption{\textbf{Footway Live Load --- Table 3.3(b)}}
+\begin{longtable}{|L{5.5cm}|p{10.0cm}|}
+\caption{\textbf{Footway Live Load}}\\
 \hline
-\textbf{Parameter} & \textbf{Value} & \textbf{Unit} \\
+\textbf{parameter} & \textbf{value} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Parameter} & \textbf{Value} & \textbf{Unit} \\
+\textbf{parameter} & \textbf{value} \\
 \hline
 \endhead
-\textnormal{Footpath Live Load Pressure} & """ + _tex(fp_str) + r""" & """ + fp_unit + r""" \\[6pt]
-\hline
-\textnormal{Load Mode} & """ + _tex(str(fp_mode) if fp_mode else 'N/A') + r""" & --- \\[6pt]
-\hline
-\textnormal{Applicable Clause} & """ + _tex(fp_clause) + r""" & --- \\[6pt]
-\hline
+""" + fp_rows + r"""
 \end{longtable}
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Wind Load (WL) --- per IRC 6}}
+\caption{\textbf{Wind Load (WL) --- per IRC 6}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -471,7 +462,7 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Earthquake Load (EL) --- per IRC 6}}
+\caption{\textbf{Earthquake Load (EL) --- per IRC 6}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -502,7 +493,7 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Temperature Load (TL) --- per IRC 6}}
+\caption{\textbf{Temperature Load (TL) --- per IRC 6}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -523,7 +514,7 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \vspace{1em}
 \begin{longtable}{|C{4.0cm}|p{11.5cm}|}
-\caption{\textbf{Load Combinations}}
+\caption{\textbf{Load Combinations}}\\
 \hline
 \textbf{Combination ID} & \textbf{Load Cases} \\[6pt]
 \hline

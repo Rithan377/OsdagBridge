@@ -5,11 +5,13 @@
 from osdagbridge.core.reports.report_utils import _fig_or_placeholder, _render_value, _tex, get_girder_entries
 from osdagbridge.core.utils.common import (
     KEY_CARRIAGEWAY_WIDTH,
+    KEY_FOOTPATH,
     KEY_SD_SECTION_DESIGNATION,
     KEY_SPAN,
     KEY_STRUCTURE_TYPE,
     KEY_TS_DECK_THICKNESS,
     KEY_TS_GIRDER_SPACING,
+    KEY_TS_NO_OF_FOOTPATHS,
     KEY_TS_NO_OF_GIRDERS
 )
 
@@ -55,9 +57,14 @@ def _max_member_efficiency(pair_designs):
 
 
 def executive_summary(input_dict, output_dict, fig_paths) -> str:
+    fp_raw = str(input_dict.get(KEY_FOOTPATH, "") or input_dict.get("footpath", "")).strip().lower()
+    has_fp = fp_raw in ("yes", "true", "1", "single side", "both sides")
+    if not fp_raw and str(input_dict.get(KEY_TS_NO_OF_FOOTPATHS, "0")).strip() in ("0", "none", ""):
+        has_fp = False
+    cs_caption = 'Figure 2 -- Typical Cross-Section (with girder, deck, barriers, footpath)' if has_fp else 'Figure 2 -- Typical Cross-Section (with girder, deck, and barriers)'
+
     plan_fig = _fig_or_placeholder(fig_paths.get('girder_top'), 'Figure 1 -- Overall Bridge Plan')
-    cs_fig = _fig_or_placeholder(fig_paths.get('cross_section'),
-                                  'Figure 2 -- Typical Cross-Section (with girder, deck, barriers, footpath)')
+    cs_fig = _fig_or_placeholder(fig_paths.get('cross_section'), cs_caption)
     geom_fig = _fig_or_placeholder(fig_paths.get('final_geometry'),
                                     'Figure 3 -- 3D View of Bridge Superstructure')
 

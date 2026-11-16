@@ -28,7 +28,7 @@ def _boq_chart_block(steel_path, concrete_path):
 def _qval(val):
     if val is None or val == "":
         return "N.A."
-    s = str(val).replace('³', '$^3$').replace('²', '$^2$')
+    s = str(val).replace('³', '$^3$').replace('²', '$^2$').replace('π', r'$\pi$')
     return s.replace('%', r'\%')
 
 
