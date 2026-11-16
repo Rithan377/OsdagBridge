@@ -7,6 +7,7 @@ from osdagbridge.core.utils.common import (
     KEY_CB_LOAD,
     KEY_FOOTPATH,
     KEY_TS_NO_OF_FOOTPATHS,
+    KEY_TS_FOOTPATH_WIDTH,
     KEY_LL_CUSTOM_VEHICLES,
     KEY_LL_FOOTPATH_PRESSURE_MODE,
     KEY_LL_FOOTPATH_PRESSURE_VALUE,
@@ -188,6 +189,20 @@ def ch3_loads(input_dict):
     has_fp = fp_raw in ("yes", "true", "1", "single side", "both sides")
     if not fp_raw and str(input_dict.get(KEY_TS_NO_OF_FOOTPATHS, "0")).strip() in ("0", "none", ""):
         has_fp = False
+
+    fp_mode = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_MODE)
+    fp_val = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_VALUE)
+    if fp_val is not None:
+        try:
+            fp_str = f"{float(fp_val):.2f}"
+        except Exception:
+            fp_str = str(fp_val)
+    else:
+        try:
+            span_f = float(input_dict.get(KEY_SPAN, 30.0))
+            fp_str = f"{IRC6_2017.cl_206_1_footway_load(span_f):.2f}"
+        except Exception:
+            fp_str = "4.91"
 
     if not has_fp:
         fp_rows = (
