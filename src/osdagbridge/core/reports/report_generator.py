@@ -194,9 +194,15 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
 
 \captionsetup{
     labelfont=bf,
-    justification=raggedright,
-    singlelinecheck=false,
     format=plain
+}
+\captionsetup[table]{
+    justification=raggedright,
+    singlelinecheck=false
+}
+\captionsetup[figure]{
+    justification=centering,
+    singlelinecheck=false
 }
 \usepackage{subcaption}
 \usepackage{multirow}
