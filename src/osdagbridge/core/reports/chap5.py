@@ -143,7 +143,12 @@ from osdagbridge.core.utils.common import (
     KEY_UTIL_SHEAR
 )
 
-from osdagbridge.core.reports.report_utils import _tex, _render_value, get_girder_entries
+from osdagbridge.core.reports.report_utils import (
+    _tex,
+    _render_value,
+    get_girder_entries,
+    paginate_girder_table_blocks,
+)
 
 if TYPE_CHECKING:
     pass
@@ -265,7 +270,7 @@ def ch5_design_checks(checks_data, bridge, ur_chart_path=None) -> str:
  & \textnormal{Depth to Plastic Neutral Axis (mm)} & """ + _render_value(bridge.output_dict, KEY_SD_PNA_DEPTH) + r""" \\[6pt]
 \hline"""
         )
-    t51_content = "\n".join(t51_rows)
+    t51_content = paginate_girder_table_blocks(t51_rows, max_rows_per_page=16)
 
     # Generate Table 5.2 rows
     t52_rows = []
@@ -352,7 +357,7 @@ def ch5_design_checks(checks_data, bridge, ur_chart_path=None) -> str:
  & Utilization Ratio, $V_u / V_d$ & $V_u / V_d \leq 1.0$ & """ + ur_val + r""" & \\[6pt]
 \hline"""
         )
-    t54_content = "\n".join(t54_rows)
+    t54_content = paginate_girder_table_blocks(t54_rows, max_rows_per_page=18)
 
     # Generate Table 5.5 rows
     # Interaction DCRs use the engine bands: PASS <0.90, WARN <1.00, FAIL ≥1.00.
@@ -401,7 +406,7 @@ def ch5_design_checks(checks_data, bridge, ur_chart_path=None) -> str:
  & Interaction Check: $N_u/N_{Rd} + M_u/M_{dv} \leq 1.0$ & """ + _mn_cond + r""" & """ + _mn_val + r""" & """ + _mn_status + r""" \\[6pt]
 \hline"""
         )
-    t55_content = "\n".join(t55_rows)
+    t55_content = paginate_girder_table_blocks(t55_rows, max_rows_per_page=10)
 
     # Generate Table 5.6 rows
     # LTB UR: prefer per-girder check from design_results["per_girder"]; fallback to KEY_UTIL_LTB.
@@ -437,7 +442,7 @@ def ch5_design_checks(checks_data, bridge, ur_chart_path=None) -> str:
  & Lateral Torsional Buckling Check & $M_u \leq M_b$ & """ + ur_val + r""" & \\[6pt]
 \hline"""
         )
-    t56_content = "\n".join(t56_rows)
+    t56_content = paginate_girder_table_blocks(t56_rows, max_rows_per_page=12)
 
     # Generate Table 5.7 rows
     t57_rows = []
@@ -456,7 +461,7 @@ def ch5_design_checks(checks_data, bridge, ur_chart_path=None) -> str:
  & \textnormal{Longitudinal Stiffeners} & """ + _render_value(bridge.output_dict, KEY_SD_STIFF_LONG) + r""" \\[6pt]
 \hline"""
         )
-    t57_content = "\n".join(t57_rows)
+    t57_content = paginate_girder_table_blocks(t57_rows, max_rows_per_page=14)
 
     # Generate table - intermediate stiffener checks (IS 800 CL. 8.7.1.2)
     # Status: PASS when Provided ≥ Required.
@@ -1231,6 +1236,7 @@ This section presents all structural design checks performed by OsdagBridge. For
 """ + t51_content + r"""
 \end{longtable}
 
+\clearpage
 \vspace{1em}
 \begin{longtable}{|C{2.5cm}|L{3cm}|C{3.5cm}|C{2.5cm}|>{\centering\arraybackslash}p{4.0cm}|}
 \caption{\textbf{Girder Section Classification}}\label{tab:girder_classification}\\
@@ -1262,6 +1268,7 @@ This section presents all structural design checks performed by OsdagBridge. For
 \end{longtable}
 \noindent\textit{Note: IRC 22 Cl. 603.3.1, IS 800 Cl. 8.2.1}
 
+\clearpage
 \vspace{1em}
 \begin{longtable}{|C{2.5cm}|C{3.5cm}|C{3.5cm}|>{\centering\arraybackslash}p{4.2cm}|C{1.8cm}|}
 \caption{\textbf{Shear Capacity Check}}\label{tab:shear_capacity}\\
@@ -1277,6 +1284,7 @@ This section presents all structural design checks performed by OsdagBridge. For
 \end{longtable}
 \noindent\textit{Note: IS 800 Cl. 8.4, IRC 22 Cl. 603.3.3.2}
 
+\clearpage
 \vspace{1em}
 \begin{longtable}{|C{2.5cm}|C{3.5cm}|C{3.5cm}|>{\centering\arraybackslash}p{4.2cm}|C{1.8cm}|}
 \caption{\textbf{Interaction Checks (M-V and M-N)}}\label{tab:interaction_checks}\\
@@ -1292,6 +1300,7 @@ This section presents all structural design checks performed by OsdagBridge. For
 \end{longtable}
 \noindent\textit{Note: IRC 22 Cl. 603.3.3.3}
 
+\clearpage
 \vspace{1em}
 \begin{longtable}{|C{2.5cm}|C{3.5cm}|C{3.5cm}|>{\centering\arraybackslash}p{4.2cm}|C{1.8cm}|}
 \caption{\textbf{Lateral Torsional Buckling Check -- Construction Stage}}\label{tab:ltb_check}\\
@@ -1307,6 +1316,7 @@ This section presents all structural design checks performed by OsdagBridge. For
 \end{longtable}
 \noindent\textit{Note: IRC 22 Cl. 603.3.3.1, IS 800 Cl. 8.2.2}
 
+\clearpage
 \vspace{1em}
 \begin{longtable}{|C{2.5cm}|L{6.5cm}|>{\arraybackslash}p{6.5cm}|}
 \caption{\textbf{Stiffener Design Summary}}\label{tab:stiffener_summary}\\

@@ -743,6 +743,9 @@ class CrossSectionCADWidget(QWidget):
                                bg_color=QColor(255, 255, 255, 230), 
                                text_color=QColor(0, 0, 0), font_size=9, bold=False):
 
+        if not text or not str(text).strip():
+            return
+
         # defensive check: font size must be > 0
         font_size = max(1, font_size)
         font_weight = QFont.Bold if bold else QFont.Normal

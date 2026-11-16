@@ -1,3 +1,4 @@
+import re
 from osdagbridge.core.utils.common import (
     KEY_MP_GD_MEMBER_ID,
     KEY_MP_GD_SELECT_GIRDER,
@@ -111,5 +112,41 @@ def _fig_embed(path, caption, width=r'\textwidth', height=None):
     return (r'\noindent\fbox{\parbox{0.97\textwidth}{' + '\n'
             r'\textit{[ PLACEHOLDER: ' + caption + r' ]}' + '\n'
             r'}}')
+
+
+def paginate_girder_table_blocks(blocks, rows_per_block=None, max_rows_per_page=18):
+    """
+    Dynamically paginate multi-row table blocks (e.g. per-girder check blocks)
+    so that multirow groups are never split across page boundaries.
+    Inserts a \\pagebreak between blocks when adding the next block would exceed
+    the safe page row capacity.
+    """
+    if not blocks:
+        return ""
+
+    paginated_blocks = []
+    current_page_rows = 0
+
+    for block in blocks:
+        if rows_per_block is not None:
+            r = rows_per_block
+        else:
+            m = re.search(r'\\multirow\{(\d+)\}', block)
+            if m:
+                r = int(m.group(1))
+            else:
+                r = block.count(r'\\[')
+                if r == 0:
+                    r = 1
+
+        if current_page_rows > 0 and (current_page_rows + r > max_rows_per_page):
+            paginated_blocks.append(r"\pagebreak")
+            current_page_rows = 0
+
+        paginated_blocks.append(block)
+        current_page_rows += r
+
+    return "\n".join(paginated_blocks)
+
 
 
