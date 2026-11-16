@@ -5,6 +5,8 @@
 
 from osdagbridge.core.utils.common import (
     KEY_CB_LOAD,
+    KEY_FOOTPATH,
+    KEY_TS_NO_OF_FOOTPATHS,
     KEY_LL_CUSTOM_VEHICLES,
     KEY_LL_FOOTPATH_PRESSURE_MODE,
     KEY_LL_FOOTPATH_PRESSURE_VALUE,
@@ -182,17 +184,30 @@ def ch3_loads(input_dict):
         r"\textnormal{---} & --- & --- & --- \\[6pt]" + "\n\\hline"
     )
 
-    fp_mode  = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_MODE, "")
-    fp_value = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_VALUE, "")
-    if str(fp_mode).strip().lower() in ("as per irc 6", "as per irc6", "automatic"):
-        try:
-            fp_str = f"{IRC6_2017.cl_206_1_footway_load():.3f}"
-        except Exception:
-            fp_str = "4.905"
-    elif fp_value not in (None, ""):
-        fp_str = f"{float(fp_value):.3f}"
+    fp_raw = str(input_dict.get(KEY_FOOTPATH, "") or input_dict.get("footpath", "")).strip().lower()
+    has_fp = fp_raw in ("yes", "true", "1", "single side", "both sides")
+    if not fp_raw and str(input_dict.get(KEY_TS_NO_OF_FOOTPATHS, "0")).strip() in ("0", "none", ""):
+        has_fp = False
+
+    if not has_fp:
+        fp_str = "N/A (No footpath provided)"
+        fp_mode = "N/A"
+        fp_clause = "IRC 6 Cl. 206.1 (Not applicable)"
+        fp_unit = "---"
     else:
-        fp_str = "4.905"
+        fp_mode  = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_MODE, "")
+        fp_value = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_VALUE, "")
+        if str(fp_mode).strip().lower() in ("as per irc 6", "as per irc6", "automatic"):
+            try:
+                fp_str = f"{IRC6_2017.cl_206_1_footway_load():.3f}"
+            except Exception:
+                fp_str = "4.905"
+        elif fp_value not in (None, ""):
+            fp_str = f"{float(fp_value):.3f}"
+        else:
+            fp_str = "4.905"
+        fp_clause = "IRC 6 Cl. 206.1"
+        fp_unit = r"kN/m$^2$"
 
     # Wearing course load calculation
     wc_mat = input_dict.get(KEY_WC_MATERIAL) or "Concrete"
@@ -417,11 +432,11 @@ This section summarizes all loads applied to the bridge and the load combination
 \textbf{Parameter} & \textbf{Value} & \textbf{Unit} \\
 \hline
 \endhead
-\textnormal{Footpath Live Load Pressure} & """ + _tex(fp_str) + r""" & kN/m$^2$ \\[6pt]
+\textnormal{Footpath Live Load Pressure} & """ + _tex(fp_str) + r""" & """ + fp_unit + r""" \\[6pt]
 \hline
 \textnormal{Load Mode} & """ + _tex(str(fp_mode) if fp_mode else 'N/A') + r""" & --- \\[6pt]
 \hline
-\textnormal{Applicable Clause} & IRC 6 Cl. 206.1 & --- \\[6pt]
+\textnormal{Applicable Clause} & """ + _tex(fp_clause) + r""" & --- \\[6pt]
 \hline
 \end{longtable}
 

@@ -42,15 +42,21 @@ def _generate_placeholder_figures(save_dir):
     figs = {}
 
     # Plan view
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.set_xlim(0, 30); ax.set_ylim(0, 10)
+    fig, ax = plt.subplots(figsize=(10, 4.5))
+    ax.set_xlim(0, 30); ax.set_ylim(-0.5, 10.5)
+    # Bridge deck outline: 30m x 10m
+    ax.add_patch(patches.Rectangle((0, 0), 30, 10, facecolor='#E8F0FE', edgecolor='black', linewidth=1.5))
+    # Carriageway outline: 7.5m width (1.25m to 8.75m)
+    ax.add_patch(patches.Rectangle((0, 1.25), 30, 7.5, facecolor='#D0E0F8', edgecolor='#6080A0', linestyle='--', linewidth=1.0))
+    # 4 Girders at y = 1.25, 3.75, 6.25, 8.75 (2.5m spacing, 1.25m overhangs)
     for i in range(4):
-        y = 1.5 + i * 2.5
-        ax.plot([0, 30], [y, y], 'b-', linewidth=2)
-        ax.text(15, y + 0.3, f'Girder G{i+1}', ha='center', fontsize=8, color='blue')
-    ax.add_patch(patches.Rectangle((0, 0.5), 30, 9, fill=False, edgecolor='black', linewidth=1.5))
-    ax.set_title('Bridge Plan View (30m Span, 4 Girders)', fontsize=12, fontweight='bold')
-    ax.set_xlabel('Span (m)'); ax.set_ylabel('Width (m)')
+        y = 1.25 + i * 2.5
+        ax.plot([0, 30], [y, y], color='#004080', linewidth=2.5)
+        ax.text(15, y + 0.35, f'Girder G{i+1} (c/c spacing = 2.5 m)', ha='center', fontsize=8, fontweight='bold', color='#004080')
+    ax.text(1.5, 9.4, 'Overall Bridge Width: 10.0 m', fontsize=8, style='italic', color='#333333')
+    ax.text(1.5, 5.0, 'Carriageway Width: 7.5 m (2 Lanes)', fontsize=8, style='italic', color='#405060')
+    ax.set_title('Bridge Plan View (30m Span, 4 Girders @ 2.5m Spacing)', fontsize=12, fontweight='bold')
+    ax.set_xlabel('Span (m)'); ax.set_ylabel('Transverse Width (m)')
     ax.set_aspect('equal')
     p = os.path.join(save_dir, 'girder_top.png')
     fig.savefig(p, dpi=150, bbox_inches='tight'); plt.close(fig)
@@ -311,10 +317,12 @@ def build_mock_payload():
 
     # ── input_dict uses the EXACT key strings from common.py ──
     input_dict = {
-        # Project info (KEY_STRUCTURE_TYPE, KEY_SPAN, KEY_CARRIAGEWAY_WIDTH)
+        # Project info (KEY_STRUCTURE_TYPE, KEY_SPAN, KEY_CARRIAGEWAY_WIDTH, KEY_FOOTPATH)
         'structure.type': 'Steel Plate Girder Bridge',
         'geometry.span': '30.0',
         'geometry.carriageway_width': '7.5',
+        'geometry.footpath': 'No',
+        'footpath': 'No',
 
         # Typical section (KEY_TS_*)
         'typical_section.no_of_girders': 4,
@@ -322,9 +330,9 @@ def build_mock_payload():
         'typical_section.deck_overhang': '1.25',
         'typical_section.overall_bridge_width': '10.0',
         'typical_section.deck_thickness': '250',
-        'typical_section.no_of_footpaths': 1,
-        'typical_section.footpath_width': '1.5',
-        'typical_section.footpath_thickness': '0.15',
+        'typical_section.no_of_footpaths': 0,
+        'typical_section.footpath_width': '0.0',
+        'typical_section.footpath_thickness': '0.0',
 
         # Material (KEY_MATERIAL_*)
         'material.girder.density': '78.5',
@@ -348,8 +356,8 @@ def build_mock_payload():
         # Also set the short aliases for code that uses them directly
         'live_load.custom_vehicles': [],
         'live_load.eccentricity': '1.2',
-        'loading.live_load.footpath_pressure.mode': 'As per IRC 6',
-        'loading.live_load.footpath_pressure.value': '',
+        'loading.live_load.footpath_pressure.mode': 'User-defined',
+        'loading.live_load.footpath_pressure.value': '0.0',
 
         # Crash barrier (KEY_CB_*)
         'typical_section.crash_barrier.type': 'IRC 5 - RCC Crash Barrier',
@@ -457,54 +465,58 @@ def build_mock_payload():
         'design_options.stud_ultimate_strength': '495',
         'design_options.top_clear_cover': '50',
         'design_options.bottom_clear_cover': '50',
+        'design_options.deck.top_clear_cover': '50',
+        'design_options.deck.bottom_clear_cover': '50',
         'design_options.reinf_material': 'Fe 500',
         'design_options.construction_stage': 'Yes',
 
         # ── BOQ quantities (pre-computed) ──
+        # Girder steel: 4 × [2 × (0.40m × 0.025m) + (1.15m × 0.012m)] × 30m = 4 × 0.0338 m² × 30m = 4.056 m³ ≈ 4.06 m³
+        # Single girder: 1.014 m³ × 7.85 t/m³ = 7.96 MT. Total 4 girders: 4.056 m³ × 7.85 t/m³ = 31.84 MT.
         'steel_girders_vol_formula': '4 × (0.4×0.025×2 + 1.15×0.012) × 30 m',
         'steel_girders_qty': '4',
-        'steel_girders_vol_total': '3.84 m\u00b3',
-        'steel_girders_wt_single': '7.52',
-        'steel_girders_wt_total': '30.08',
+        'steel_girders_vol_total': '4.06',
+        'steel_girders_wt_single': '7.96',
+        'steel_girders_wt_total': '31.84',
         'bracing_top_vol_formula': '6 panels x 2.5m x 0.002 m\u00b2',
         'bracing_top_qty': '6',
-        'bracing_top_vol_total': '0.03 m\u00b3',
+        'bracing_top_vol_total': '0.03',
         'bracing_top_wt_single': '0.04',
         'bracing_top_wt_total': '0.24',
         'bracing_bot_vol_formula': '6 panels x 2.5m x 0.002 m\u00b2',
         'bracing_bot_qty': '6',
-        'bracing_bot_vol_total': '0.03 m\u00b3',
+        'bracing_bot_vol_total': '0.03',
         'bracing_bot_wt_single': '0.04',
         'bracing_bot_wt_total': '0.24',
         'bracing_diag_vol_formula': '12 diag x 2.8m x 0.002 m\u00b2',
         'bracing_diag_qty': '12',
-        'bracing_diag_vol_total': '0.067 m\u00b3',
+        'bracing_diag_vol_total': '0.067',
         'bracing_diag_wt_single': '0.044',
         'bracing_diag_wt_total': '0.53',
         'end_diaphragm_wt_total': '0.42',
         'ed_top_vol_formula': '2 panels × 2.5m × 0.002 m²',
         'ed_top_qty': '2',
-        'ed_top_vol_total': '0.01 m³',
+        'ed_top_vol_total': '0.01',
         'ed_top_wt_single': '0.04',
         'ed_top_wt_total': '0.08',
         'ed_bot_vol_formula': '2 panels × 2.5m × 0.002 m²',
         'ed_bot_qty': '2',
-        'ed_bot_vol_total': '0.01 m³',
+        'ed_bot_vol_total': '0.01',
         'ed_bot_wt_single': '0.04',
         'ed_bot_wt_total': '0.08',
         'ed_diag_vol_formula': '4 diag × 2.8m × 0.002 m²',
         'ed_diag_qty': '4',
-        'ed_diag_vol_total': '0.022 m³',
+        'ed_diag_vol_total': '0.022',
         'ed_diag_wt_single': '0.044',
         'ed_diag_wt_total': '0.18',
         'concrete_deck_vol_formula': '30m x 10m x 0.25m',
         'concrete_deck_qty': '1',
-        'concrete_deck_vol_total': '75.0',
-        'concrete_deck_wt_single': '187.5',
-        'concrete_deck_wt_total': '187.5',
-        'rebar_deck_vol_formula': '1.5% of 75 m\u00b3',
+        'concrete_deck_vol_total': '75.00',
+        'concrete_deck_wt_single': '187.50',
+        'concrete_deck_wt_total': '187.50',
+        'rebar_deck_vol_formula': '1.5% of 75 m\u00b3 = 1.125 m\u00b3',
         'rebar_deck_qty': '1',
-        'rebar_deck_vol_total': '1.125',
+        'rebar_deck_vol_total': '1.13',
         'rebar_deck_wt_single': '8.83',
         'rebar_deck_wt_total': '8.83',
         'shear_studs_vol_formula': '\u03c0(10)\u00b2 x 100mm/stud',
@@ -512,11 +524,13 @@ def build_mock_payload():
         'shear_studs_vol_total': '0.019',
         'shear_studs_wt_single': '0.00025',
         'shear_studs_wt_total': '0.15',
+        # Crash barrier: 2 barriers × 30m × 0.16 m² = 9.60 m³
+        # Single barrier: 4.80 m³ × 2.40 t/m³ = 11.52 MT. Total 2 barriers: 9.60 m³ × 2.40 t/m³ = 23.04 MT.
         'crash_barrier_vol_formula': '2 barriers x 30m x 0.16 m\u00b2',
         'crash_barrier_qty': '2',
-        'crash_barrier_vol_total': '9.6',
-        'crash_barrier_wt_single': '120.0',
-        'crash_barrier_wt_total': '240.0',
+        'crash_barrier_vol_total': '9.60',
+        'crash_barrier_wt_single': '11.52',
+        'crash_barrier_wt_total': '23.04',
 
         # Deck design keys (KEY_DD_*) — EXACT from common.py
         'deck.report.fy': '500',
@@ -558,7 +572,7 @@ def build_mock_payload():
         'deckdesign.crack.wk.limit': 0.30,
         'deckdesign.crack.wk.bottom': 0.18,
         'deckdesign.crack.wk.top': 0.12,
-        'deck.report.span': '30.0',
+        'deck.report.span': '2.5',
         'deck.report.vehicle_class': 'Class 70R (Wheeled)',
     }
 
@@ -752,6 +766,8 @@ def build_mock_payload():
             'ur_oh': 0.74,
             'ur_punch': 0.71,
             'ur_shear': 0.67,
+            'rebar_bottom_area': 3217.0,
+            'rebar_top_area': 2412.0,
         },
 
         # Cross bracing design results
@@ -889,7 +905,7 @@ def build_mock_payload():
             'deckdesign.crack.wk.limit': 0.30,
             'deckdesign.crack.wk.bottom': 0.18,
             'deckdesign.crack.wk.top': 0.12,
-            'deck.report.span': '30.0',
+            'deck.report.span': '2.5',
             'deck.report.vehicle_class': 'Class 70R (Wheeled)',
             'deck.report.tyre_contact_length': 250,
             'deck.report.tyre_contact_width': 500,
@@ -1067,12 +1083,19 @@ def build_mock_payload():
         'steeldesign.details.moment.md_capacity.G3.M1': 4885.0,
         'steeldesign.details.moment.md_capacity.G4.M1': 4885.0,
         'steeldesign.details.moment.mu_applied.G1.M1': 4250.0,
+        'steeldesign.details.moment.mu_applied.G2.M1': 4180.0,
+        'steeldesign.details.moment.mu_applied.G3.M1': 4180.0,
+        'steeldesign.details.moment.mu_applied.G4.M1': 4250.0,
 
         # Shear capacity per-girder
         'steeldesign.details.shear_check.vd.G1.M1': 935.0,
         'steeldesign.details.shear_check.vd.G2.M1': 935.0,
         'steeldesign.details.shear_check.vd.G3.M1': 935.0,
         'steeldesign.details.shear_check.vd.G4.M1': 935.0,
+        'steeldesign.details.shear_check.vu_applied.G1.M1': 580.0,
+        'steeldesign.details.shear_check.vu_applied.G2.M1': 560.0,
+        'steeldesign.details.shear_check.vu_applied.G3.M1': 560.0,
+        'steeldesign.details.shear_check.vu_applied.G4.M1': 580.0,
 
         # LTB per-girder
         'steeldesign.details.ltb.mcr.G1.M1': 6520.0,

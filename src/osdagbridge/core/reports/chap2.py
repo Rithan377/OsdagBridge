@@ -134,8 +134,15 @@ def ch2_input_parameters(m, input_dict, output_dict=None):
     has_med = str(input_dict.get(KEY_INCLUDE_MEDIAN, "")).strip().lower() in ("yes", "true", "1")
     median_val = "Yes" if has_med else "No"
 
-    has_fp = str(input_dict.get(KEY_FOOTPATH, "")).strip().lower() in ("yes", "true", "1")
+    fp_raw = str(input_dict.get(KEY_FOOTPATH, "") or input_dict.get("footpath", "")).strip().lower()
+    has_fp = fp_raw in ("yes", "true", "1", "single side", "both sides")
+    if not fp_raw and str(input_dict.get(KEY_TS_NO_OF_FOOTPATHS, "0")).strip() in ("0", "none", ""):
+        has_fp = False
     footpath_val = "Yes" if has_fp else "No"
+    fp_width_str = (
+        (_render_value(input_dict, KEY_TS_FOOTPATH_WIDTH, ' m') + r" (IRC 5 Cl. 104.3.6 min: 1.5 m)")
+        if has_fp else "None (No footpath provided)"
+    )
 
     skew_val = input_dict.get(KEY_SKEW_ANGLE)
     if skew_val not in (None, "", 0, "0"):
@@ -273,7 +280,7 @@ Where the user has modified additional inputs, those values are reported here. W
 \hline
 \textnormal{Deck Thickness (mm)} & """ + (_render_value(input_dict, KEY_TS_DECK_THICKNESS, ' mm')) + r""" \\[6pt]
 \hline
-\textnormal{Footpath Width (m)} & """ + (_render_value(input_dict, KEY_TS_FOOTPATH_WIDTH, ' m')) + r""" (IRC 5 Cl. 104.3.6 min: 1.5 m) \\[6pt]
+\textnormal{Footpath Width (m)} & """ + fp_width_str + r""" \\[6pt]
 \hline
 \textnormal{No. of Traffic Lanes} & """ + (_render_value(input_dict, KEY_WC_LD_LANE_TABLE_COUNT)) + r""" (per IRC 5 Cl. 104.3.1) \\[6pt]
 \hline
@@ -379,10 +386,10 @@ def _girder_tables(input_dict, n_girders):
             th = _g_val(KEY_MP_STIFFENER_INTERMEDIATE_THICKNESS, i, "12")
             int_str = f"Provided ({sp} mm c/c, {th} mm thk)"
         else:
-            int_str = "None"
+            int_str = "Not provided (unstiffened web)"
 
         has_long = _g_val(KEY_MP_STIFFENER_LONGITUDINAL, i, "No")
-        long_str = "Provided" if str(has_long).strip().lower() in ("yes", "true", "1") else "None"
+        long_str = "Provided" if str(has_long).strip().lower() in ("yes", "true", "1") else "Not provided"
 
         no_bs = _g_val(KEY_MP_STIFFENER_NO_BEARING_STIFFENERS, i, "2")
         th_bs = _g_val(KEY_MP_STIFFENER_BEARING_THICKNESS, i, "20")
