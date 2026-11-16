@@ -14,7 +14,20 @@ from osdagbridge.desktop.ui.docks.cad_dual_view import BridgeDualCADWidget
 from osdagbridge.desktop.ui.dialogs.additional_input.additional_inputs import AdditionalInputs
 from osdagbridge.desktop.ui.dialogs.custom_messagebox import CustomMessageBox, MessageBoxType
 from osdagbridge.desktop.ui.dialogs.loading_popup import LoadingDialogManager
-from osdagbridge.desktop.ui.cad_3d import CAD3DWindow
+try:
+    from osdagbridge.desktop.ui.cad_3d import CAD3DWindow
+except (ImportError, Exception):
+    class CAD3DWindow(QWidget):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+            layout = QVBoxLayout(self)
+            label = QLabel("3D CAD View requires OpenCASCADE (pythonocc-core).\n2D Dual CAD (Cross-Section & Plan View) is active.", self)
+            label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(label)
+            self.component_selector = None
+            self.generator = None
+        def render_3d_cad(self, *args, **kwargs):
+            pass
 
 from osdagbridge.core.bridge_types.plate_girder.ui_fields import FrontendData
 from osdagbridge.core.bridge_types.plate_girder.defaults import BASIC_INPUT_DICT, solve_extend_basic_input_dict
@@ -352,7 +365,6 @@ class CustomWindow(QWidget):
         )
         self.cad_log_splitter.addWidget(self.cad_comp_widget)
 
-        # from osdagbridge.desktop.ui.cad_3d import CAD3DWindow
         # 3D CAD placeholder (mutually exclusive with dual view + plots)
         self.cad_3d_widget = CAD3DWindow()
         self.cad_3d_widget.setVisible(False)
